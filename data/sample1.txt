@@ -6,5 +6,8 @@ b:
     item2
 
 cs:
-    item1
+  item1
+  , sparkleshine
+  , hotel
+  , voodoo
   item2
