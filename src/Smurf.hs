@@ -8,7 +8,7 @@ import Control.Monad.State
 
 parseSmurf :: SourceName -> String -> String
 parseSmurf file s =
-  case iParse aNamedList file s of
+  case iParse smurf file s of
     Left  err    -> show err    ++ "\n"
     Right result -> show result ++ "\n"
 
@@ -17,6 +17,11 @@ type IParser a = IndentParser String () a
 iParse :: IParser a -> SourceName -> String -> Either ParseError a
 iParse aParser source_name input =
   runIndentParser aParser () source_name input
+
+type Smurf = [NamedList]
+
+smurf :: IParser Smurf
+smurf = many1 aNamedList
 
 data NamedList = NamedList Name [Item] deriving (Show)
 
