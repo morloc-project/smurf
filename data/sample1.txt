@@ -1,13 +1,16 @@
-a:
-  as
+Foo :: Star, Power -> Magic
 
-b:
-    item1
-    item2
+Bar :: Sparkle, Power -> Magic where
+    pickle,
+    foo
 
-cs:
-  item1
-  , sparkleshine
-  , hotel
-  , voodoo
-  item2
+source R:
+  
+  library(magrittr)
+  runif(10) %>%
+    sum
+
+source python:
+    
+    def foo(x):
+        x * 2
