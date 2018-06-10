@@ -31,7 +31,7 @@ parseSmurf file s =
 smurf :: IParser Smurf
 smurf = do
   result <- many1 aStatement 
-  eof
+  -- eof
   return result
 
 aStatement :: IParser Statement
@@ -42,13 +42,16 @@ aStatement = do
   return s
 
 aSource :: IParser Statement
-aSource = withBlockBy Source aSourceHeader aLine
+aSource = do
+  header <- aSourceHeader
+  source <- many1 (notTopLevel >> aLine)
+  return $ Source header source
 
 aLine :: IParser String
 aLine = do
-  line <- many (noneOf "\n")
-  spaces 
-  return line
+  line <- option "" (many (noneOf "\n"))
+  spaces
+  return line 
 
 aSourceHeader :: IParser String
 aSourceHeader = do
@@ -97,22 +100,3 @@ aFollowingName = do
   spaces
   i <- aName
   return i
-
-withBlockBy
-  :: (Monad m, Stream s (IndentT m) z)
-  => (a -> [b] -> c)
-  -> IndentParserT s u m a
-  -> IndentParserT s u m b
-  -> IndentParserT s u m c
-withBlockBy f a p = withPos $ do
-  r1 <- a
-  r2 <- option [] (indented >> blockBy p)
-  return (f r1 r2)
-
-blockBy
-  :: (Monad m, Stream s (IndentT m) z)
-  => IndentParserT s u m a
-  -> IndentParserT s u m [a]
-blockBy p = withPos $ do
-  r <- many1 (indented >> p)
-  return r
