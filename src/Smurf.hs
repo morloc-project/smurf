@@ -43,24 +43,25 @@ aStatement = do
 
 aSource :: IParser Statement
 aSource = do
-  header <- aSourceHeader
-  source <- many1 (notTopLevel >> aLine)
-  return $ Source header source
-
-aLine :: IParser String
-aLine = do
-  line <- option "" (many (noneOf "\n"))
   spaces
-  return line 
-
-aSourceHeader :: IParser String
-aSourceHeader = do
   string "source"
-  spaces
+  many aSpace
   lang <- aName
   char ':'
-  spaces
-  return lang
+  many aSpace
+  char '\n'
+  source <- many aSourceLine
+  return $ Source lang source
+
+aSpace :: IParser Char
+aSpace = char ' ' <|> char '\t'
+
+aSourceLine :: IParser String
+aSourceLine = do
+  s <- many1 aSpace
+  l <- many (noneOf "\n")
+  newline
+  return $ (s ++ l)
 
 aSignature :: IParser Statement 
 aSignature = do
