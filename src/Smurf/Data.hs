@@ -1,6 +1,7 @@
 module Smurf.Data (
     Smurf(..)
   , Statement(..)
+  , Package(..)
   , InputType
   , OutputType
   , Type
@@ -9,12 +10,20 @@ module Smurf.Data (
 ) where
 
 import Data.List (intersperse)
+import Data.Maybe (maybe)
 
 data Smurf = Smurf [Statement]
 data Statement
   = Signature Name [InputType] OutputType [Constraint]
   | Source Name [String]
+  | Import Package
   deriving(Ord, Eq)
+
+data Package = Package {
+      packagePath :: [Name]
+    , packageQualifier :: Maybe Name
+    , packageRestriction :: Maybe [Name]
+  } deriving(Show, Ord, Eq)
 
 showStatement' :: Name -> [InputType] -> OutputType -> String
 showStatement' n ins o
@@ -32,6 +41,7 @@ instance Show Statement where
     (unlines . map ((++) "  ") . (map show) $ cs) 
   show (Source n ls) =
     unlines (("source " ++ n) : ls)
+  show (Import pkg) = show pkg
 
 instance Show Smurf where
   show (Smurf xs) = unlines . map show $ xs

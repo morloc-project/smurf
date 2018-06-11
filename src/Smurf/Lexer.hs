@@ -5,6 +5,10 @@ module Smurf.Lexer (
   , keyword
   , nonSpace
   , chop
+  , name
+  , path
+  , comma
+  , pathElement
 ) where
 
 import Text.Parsec hiding (State)
@@ -23,6 +27,32 @@ typename = do
 -- | match any non-space character
 nonSpace :: Parser Char
 nonSpace = noneOf " \n\t\r\v"
+
+name :: Parser String
+name = do
+  s <- satisfy DC.isAlpha
+  ss <- many (alphaNum <|> oneOf "._'")
+  spaces
+  return (s : ss)
+
+pathElement :: Parser String
+pathElement = do
+  s <- satisfy DC.isAlpha
+  ss <- many (noneOf ". \n\t\r\v")
+  spaces
+  return (s : ss)
+
+comma :: Parser String
+comma = do
+  c <- char ','
+  ss <- many (satisfy DC.isSpace)
+  return (c : ss)
+
+path :: Parser [String]
+path = do
+  ps <- sepBy pathElement (char '.')
+  spaces
+  return ps
 
 -- | matches all trailing space
 chop :: Parser String

@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 
 module Smurf.Parser (smurf) where
 
@@ -15,12 +16,34 @@ smurf = do
   eof
   return $ Smurf result
 
+parens :: _ -> Parser a
+parens = between (char '(') (char ')')
+
 aStatement :: Parser Statement
 aStatement = do
   s <-  try aSignature
     <|> try aSource
+    <|> try aRestrictedImport
+    <|> try aSimpleImport
     <?> "a Statement"
   return s
+
+aSimpleImport :: Parser Statement
+aSimpleImport = do
+  Tok.keyword "import" 
+  path <- Tok.path
+  spaces
+  qual <- optionMaybe (Tok.keyword "as" >> Tok.pathElement)
+  return $ Import (Package path qual Nothing)
+
+aRestrictedImport :: Parser Statement
+aRestrictedImport = do
+  Tok.keyword "from"
+  path <- Tok.path
+  Tok.keyword "import"
+  functions <- parens (sepBy1 Tok.name Tok.comma)
+  spaces
+  return $ Import (Package path Nothing (Just functions))
 
 -- | parses a 'source' header, returning the language
 aSource :: Parser Statement 
