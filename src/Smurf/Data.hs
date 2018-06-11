@@ -1,7 +1,8 @@
 module Smurf.Data (
-    Smurf(..)
+    Top(..)
+  , Import(..)
   , Statement(..)
-  , Package(..)
+  , Source(..)
   , InputType
   , OutputType
   , Type
@@ -12,39 +13,26 @@ module Smurf.Data (
 import Data.List (intersperse)
 import Data.Maybe (maybe)
 
-data Smurf = Smurf [Statement]
+data Top
+  = TopImport Import 
+  | TopStatement Statement
+  | TopSource Source
+  deriving(Show, Ord, Eq)
+
+data Source = Source Name [String] deriving(Ord, Eq)
+
 data Statement
   = Signature Name [InputType] OutputType [Constraint]
-  | Source Name [String]
-  | Import Package
-  deriving(Ord, Eq)
+  deriving(Show, Ord, Eq)
 
-data Package = Package {
-      packagePath :: [Name]
-    , packageQualifier :: Maybe Name
-    , packageRestriction :: Maybe [Name]
+data Import = Import {
+      importPath :: [Name]
+    , importQualifier :: Maybe Name
+    , importRestriction :: Maybe [Name]
   } deriving(Show, Ord, Eq)
 
-showStatement' :: Name -> [InputType] -> OutputType -> String
-showStatement' n ins o
-  = n
-  ++ " :: "
-  ++ (concat . intersperse ", " . map show) ins
-  ++ " -> "
-  ++ o
-
-instance Show Statement where
-  show (Signature n ins o []) =
-    showStatement' n ins o 
-  show (Signature n ins o cs) =
-    (showStatement' n ins o) ++ " where\n" ++ 
-    (unlines . map ((++) "  ") . (map show) $ cs) 
-  show (Source n ls) =
-    unlines (("source " ++ n) : ls)
-  show (Import pkg) = show pkg
-
-instance Show Smurf where
-  show (Smurf xs) = unlines . map show $ xs
+instance Show Source where
+  show (Source n ls) = unlines (("source " ++ n) : ls)
 
 type InputType  = Type
 type OutputType = Type

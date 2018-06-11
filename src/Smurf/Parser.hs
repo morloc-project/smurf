@@ -10,43 +10,62 @@ import Control.Monad.State
 import Smurf.Data
 import qualified Smurf.Lexer as Tok
 
-smurf :: Parser Smurf
+smurf :: Parser [Top]
 smurf = do
-  result <- many1 aStatement 
+  result <- many topPiece 
   eof
-  return $ Smurf result
+  return result
+
+topPiece :: Parser Top
+topPiece =
+      try aTopSource 
+  <|> try aTopStatement
+  <|> try aTopImport
+  <?> "a Top"
+
+aTopSource :: Parser Top
+aTopSource = do
+  s <- aSource
+  return $ TopSource s
+
+aTopStatement :: Parser Top
+aTopStatement = do
+  s <- aStatement
+  return $ TopStatement s
+
+aTopImport :: Parser Top
+aTopImport = do
+  i <-  try aRestrictedImport
+    <|> try aSimpleImport
+  return $ TopImport i
 
 parens :: _ -> Parser a
 parens = between (char '(') (char ')')
 
 aStatement :: Parser Statement
 aStatement = do
-  s <-  try aSignature
-    <|> try aSource
-    <|> try aRestrictedImport
-    <|> try aSimpleImport
-    <?> "a Statement"
-  return s
+  s <- aSignature
+  return $ s
 
-aSimpleImport :: Parser Statement
+aSimpleImport :: Parser Import
 aSimpleImport = do
   Tok.keyword "import" 
   path <- Tok.path
   spaces
   qual <- optionMaybe (Tok.keyword "as" >> Tok.pathElement)
-  return $ Import (Package path qual Nothing)
+  return $ Import path qual Nothing
 
-aRestrictedImport :: Parser Statement
+aRestrictedImport :: Parser Import
 aRestrictedImport = do
   Tok.keyword "from"
   path <- Tok.path
   Tok.keyword "import"
   functions <- parens (sepBy1 Tok.name Tok.comma)
   spaces
-  return $ Import (Package path Nothing (Just functions))
+  return $ Import path Nothing (Just functions)
 
 -- | parses a 'source' header, returning the language
-aSource :: Parser Statement 
+aSource :: Parser Source
 aSource = do
   Tok.keyword "source"
   lang <- many1 Tok.nonSpace
@@ -55,7 +74,7 @@ aSource = do
   spaces
   return $ Source lang source
 
-aSignature :: Parser Statement 
+aSignature :: Parser Statement
 aSignature = do
   typename <- Tok.typename
   Tok.keyword "::"

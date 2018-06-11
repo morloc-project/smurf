@@ -6,8 +6,8 @@ from Foo.Baz import (foo)
 Foo :: Star, Power -> Magic
 
 Bar :: Sparkle, Power -> Magic where
-    pickle,
-    foo
+    pickle
+  , foo
 
 source R
   
