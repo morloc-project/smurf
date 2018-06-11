@@ -4,13 +4,13 @@ Bar :: Sparkle, Power -> Magic where
     pickle,
     foo
 
-source R:
+source R
   
   library(magrittr)
   runif(10) %>%
     sum
 
-source python:
+source python
     
     def foo(x):
         x * 2
