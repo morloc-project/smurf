@@ -21,7 +21,7 @@ topPiece =
       try aTopSource 
   <|> try aTopStatement
   <|> try aTopImport
-  <?> "a Top"
+  <?> "Top"
 
 aTopSource :: Parser Top
 aTopSource = do
@@ -74,21 +74,19 @@ aSource = do
   spaces
   return $ Source lang source
 
+-- | typename :: [input] -> output constraints 
 aSignature :: Parser Statement
 aSignature = do
   typename <- Tok.typename
   Tok.keyword "::"
-  inputs <- aNameList
+  inputs <- sepBy1 constraint Tok.comma
   Tok.keyword "->"
   output <- Tok.typename
-  constraints <- option [] aConstraintList
+  constraints <- option [] (
+      Tok.keyword "where" >>
+      sepBy1 constraint Tok.comma
+    )
   return $ Signature typename inputs output constraints
-
-aConstraintList :: Parser [Constraint]
-aConstraintList = do
-  Tok.keyword "where"
-  xs <- aNameList
-  return xs
 
 constraint :: Parser String
 constraint = do
@@ -96,17 +94,3 @@ constraint = do
   s <- many1 alphaNum
   spaces
   return s
-
-aNameList :: Parser [String]
-aNameList = do
-  x <- constraint
-  rs <- many aFollowingName
-  return (x:rs)
-
-aFollowingName :: Parser Name
-aFollowingName = do
-  spaces
-  char ','
-  spaces
-  i <- constraint
-  return i
