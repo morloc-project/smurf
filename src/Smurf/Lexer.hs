@@ -26,6 +26,8 @@ import qualified Data.Char as DC
 import qualified Text.Parsec.Language as Lang
 import qualified Text.Parsec.Token as Token
 
+import qualified Smurf.Data as D
+
 lexer :: Token.TokenParser ()
 lexer = Token.makeTokenParser style
   where
@@ -64,33 +66,40 @@ braces = Token.braces lexer
 brackets = Token.brackets lexer
 
 whiteSpace :: Parser ()
-integer    :: Parser Integer
-float      :: Parser Double
 op         :: String -> Parser ()
 reserved   :: String -> Parser ()
 name       :: Parser String
 comma      :: Parser String
 
 whiteSpace = Token.whiteSpace lexer
-integer    = Token.integer    lexer
-float      = Token.float      lexer
 op         = Token.reservedOp lexer
 reserved   = Token.reserved   lexer
 name       = Token.identifier lexer
 comma      = Token.comma      lexer
 
 
-stringLiteral :: Parser String
+integer :: Parser D.Primitive 
+integer = do
+  x <- Token.integer lexer
+  return $ D.PrimitiveInt x
+
+float :: Parser D.Primitive
+float = do
+  x <- Token.float lexer
+  return $ D.PrimitiveReal x
+
+stringLiteral :: Parser D.Primitive 
 stringLiteral = do
   _ <- char '"'
   s <- many ((char '\\' >> char '"' ) <|> noneOf "\"")
   _ <- char '"'
-  return s
+  return $ D.PrimitiveString s
 
-boolean :: Parser Bool
+boolean :: Parser D.Primitive
 boolean = do
   s <- string "True" <|> string "False"
-  return (read s)
+  return $ D.PrimitiveBool (read s)
+
 
 -- | a legal non-generic type name
 typename :: Parser String

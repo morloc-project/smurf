@@ -79,12 +79,37 @@ aDeclaration = do
   return $ Declaration varname value 
 
 anExpression :: Parser Expression
-anExpression = undefined
+anExpression =
+      try (Tok.parens anExpression)
+  <|> try anApplication
+  <|> try aPrimitiveExpr
+  <?> "an expression"
+
+aPrimitiveExpr :: Parser Expression
+aPrimitiveExpr = do
+  x <- aPrimitive
+  return $ ExprPrimitive x
+
+aPrimitive :: Parser Primitive
+aPrimitive =
+        try Tok.float -- this must go before integer
+    <|> try Tok.integer
+    <|> try Tok.boolean
+    <|> try Tok.stringLiteral
+    <?> "a primitive"
+
+anApplication :: Parser Expression
+anApplication = do
+  function <- Tok.name
+  arguments <- sepBy anExpression Tok.whiteSpace
+  return $ ExprApplication function arguments
+
 
 -- | typename :: [input] -> output constraints 
+-- TODO: make the output optional
 aSignature :: Parser Statement
 aSignature = do
-  typename <- Tok.typename
+  function <- Tok.name
   Tok.op "::"
   inputs <- sepBy1 constraint Tok.comma
   Tok.op "->"
@@ -93,7 +118,7 @@ aSignature = do
       Tok.reserved "where" >>
       Tok.braces (sepBy1 constraint (Tok.op ";"))
     )
-  return $ Signature typename inputs output constraints
+  return $ Signature function inputs output constraints
 
 constraint :: Parser String
 constraint = do

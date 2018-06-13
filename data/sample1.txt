@@ -5,12 +5,18 @@ import Foo/Biz
 from Foo.Baz import (foo, bar, baz)
 from Foo.Baz import (foo)
 
-Foo :: Star, Power -> Magic; # yolo
+foo :: Star, Power -> Magic; # yolo
 
-Bar :: Sparkle, Power -> Magic where {
+bar :: Sparkle, Power -> Magic where {
       pickle
     ; foo
   };
+
+x = 5;
+
+x = (foo 5);
+
+x = foo (bar 4) (baz 6.5);
 
 source R
   

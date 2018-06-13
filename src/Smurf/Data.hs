@@ -4,6 +4,7 @@ module Smurf.Data (
   , Statement(..)
   , Source(..)
   , Expression(..)
+  , Primitive(..)
   , InputType
   , OutputType
   , Type
@@ -28,13 +29,12 @@ data Statement
   deriving(Show, Ord, Eq)
 
 data Expression
-  = ExprName Name 
-  | ExprPrimitive Primitive
+  = ExprPrimitive Primitive
   | ExprApplication Name [Expression]
   deriving(Show, Ord, Eq)
 
 data Primitive
-  = PrimitiveInt    Int
+  = PrimitiveInt    Integer
   | PrimitiveReal   Double
   | PrimitiveBool   Bool
   | PrimitiveString String
