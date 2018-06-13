@@ -42,24 +42,31 @@ aTopImport = do
 parens :: _ -> Parser a
 parens = between (char '(') (char ')')
 
+braces :: _ -> Parser a
+braces = between (char '{') (char '}')
+
 aStatement :: Parser Statement
 aStatement = do
-  s <- aSignature
+  s <-  try aSignature
+    <|> try aDeclaration
+  Tok.op ";" -- for now, every statement ends in a semicolon
   return $ s
 
 aSimpleImport :: Parser Import
 aSimpleImport = do
-  Tok.keyword "import" 
+  Tok.reserved "import" 
   path <- Tok.path
   spaces
-  qual <- optionMaybe (Tok.keyword "as" >> Tok.pathElement)
+  qual <- optionMaybe (Tok.op "as" >> Tok.name)
   return $ Import path qual Nothing
 
 aRestrictedImport :: Parser Import
 aRestrictedImport = do
-  Tok.keyword "from"
+  Tok.reserved "from"
   path <- Tok.path
-  Tok.keyword "import"
+  Tok.reserved "import"
+  -- TODO: I am also importing ontologies, how should that be handled?
+  -- TODO: at very least, I am also importing types
   functions <- parens (sepBy1 Tok.name Tok.comma)
   spaces
   return $ Import path Nothing (Just functions)
@@ -67,24 +74,34 @@ aRestrictedImport = do
 -- | parses a 'source' header, returning the language
 aSource :: Parser Source
 aSource = do
-  Tok.keyword "source"
+  Tok.reserved "source"
   lang <- many1 Tok.nonSpace
   Tok.chop
   source <- many Tok.line
   spaces
   return $ Source lang source
 
+aDeclaration :: Parser Statement
+aDeclaration = do
+  varname <- Tok.name
+  Tok.op "="
+  value <- anExpression
+  return $ Declaration varname value 
+
+anExpression :: Parser Expression
+anExpression = undefined
+
 -- | typename :: [input] -> output constraints 
 aSignature :: Parser Statement
 aSignature = do
   typename <- Tok.typename
-  Tok.keyword "::"
+  Tok.op "::"
   inputs <- sepBy1 constraint Tok.comma
-  Tok.keyword "->"
+  Tok.op "->"
   output <- Tok.typename
   constraints <- option [] (
-      Tok.keyword "where" >>
-      sepBy1 constraint Tok.comma
+      Tok.reserved "where" >>
+      braces (sepBy1 constraint (Tok.op ";"))
     )
   return $ Signature typename inputs output constraints
 

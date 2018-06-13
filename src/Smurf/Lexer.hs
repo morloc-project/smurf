@@ -1,20 +1,83 @@
 module Smurf.Lexer (
-    typename
-  , space'
-  , line
-  , keyword
-  , nonSpace
-  , chop
+    integer
+  , float
+  , quoted
+  , boolean
+  , op
+  , reserved
   , name
+  , typename
+  , nonSpace
   , path
   , comma
-  , pathElement
+  , chop
+  , space'
+  , line
 ) where
 
 import Text.Parsec hiding (State)
 import Text.Parsec.String (Parser)
 import Control.Monad.State
 import qualified Data.Char as DC
+import qualified Text.Parsec.Language as Lang
+import qualified Text.Parsec.Token as Token
+
+lexer :: Token.TokenParser ()
+lexer = Token.makeTokenParser style
+  where
+  style = Lang.emptyDef {
+            Token.commentLine     = "#"
+          , Token.commentStart    = ""
+          , Token.commentEnd      = ""
+          , Token.nestedComments  = False
+          , Token.caseSensitive   = True
+          , Token.identStart      = letter <|> char '_'
+          , Token.identLetter     = alphaNum <|> oneOf "_.'"
+          , Token.opStart         = Token.opLetter Lang.emptyDef
+          , Token.opLetter        = oneOf ":!$%&*+./<=>?@\\^|-~"
+          , Token.reservedOpNames = ["=", "::", "+", "-", "^", "/", "//", "%", "->", ";"]
+          , Token.reservedNames = [
+                "where"
+              , "import"
+              , "from"
+              , "as"
+              , "source"
+              , "True"
+              , "False"
+              , "and"
+              , "or"
+              , "xor"
+              , "nand"
+              , "not"
+            ]
+          }
+
+integer :: Parser Integer
+integer = Token.integer lexer
+
+float :: Parser Double
+float = Token.float lexer
+
+quoted :: Parser String
+quoted = do
+  _ <- char '"'
+  s <- many ((char '\\' >> char '"' ) <|> noneOf "\"")
+  _ <- char '"'
+  return s
+
+boolean :: Parser Bool
+boolean = do
+  s <- string "True" <|> string "False"
+  return (read s)
+
+op :: String -> Parser ()
+op = Token.reservedOp lexer
+
+reserved :: String -> Parser ()
+reserved = Token.reserved lexer
+
+name :: Parser String
+name = Token.identifier lexer
 
 -- | a legal non-generic type name
 typename :: Parser String
@@ -28,31 +91,17 @@ typename = do
 nonSpace :: Parser Char
 nonSpace = noneOf " \n\t\r\v"
 
-name :: Parser String
-name = do
-  s <- satisfy DC.isAlpha
-  ss <- many (alphaNum <|> oneOf "._'")
+path :: Parser [String]
+path = do
+  path <- sepBy name (char '/')
   spaces
-  return (s : ss)
-
-pathElement :: Parser String
-pathElement = do
-  s <- satisfy DC.isAlpha
-  ss <- many (noneOf ". \n\t\r\v")
-  spaces
-  return (s : ss)
+  return path
 
 comma :: Parser String
 comma = do
   c <- char ','
   ss <- many (satisfy DC.isSpace)
   return (c : ss)
-
-path :: Parser [String]
-path = do
-  ps <- sepBy pathElement (char '.')
-  spaces
-  return ps
 
 -- | matches all trailing space
 chop :: Parser String
@@ -61,13 +110,6 @@ chop = do
   optional newline
   return ss
 
--- | matches for keyword
-keyword :: String -> Parser String
-keyword w = do
-  s <- string w
-  spaces
-  return s
-  
 -- | non-newline space
 space' :: Parser Char
 space' = char ' ' <|> char '\t'

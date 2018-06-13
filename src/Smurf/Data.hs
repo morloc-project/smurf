@@ -3,6 +3,7 @@ module Smurf.Data (
   , Import(..)
   , Statement(..)
   , Source(..)
+  , Expression(..)
   , InputType
   , OutputType
   , Type
@@ -23,6 +24,20 @@ data Source = Source Name [String] deriving(Ord, Eq)
 
 data Statement
   = Signature Name [InputType] OutputType [Constraint]
+  | Declaration Name Expression
+  deriving(Show, Ord, Eq)
+
+data Expression
+  = ExprName Name 
+  | ExprPrimitive Primitive
+  | ExprApplication Name [Expression]
+  deriving(Show, Ord, Eq)
+
+data Primitive
+  = PrimitiveInt    Int
+  | PrimitiveReal   Double
+  | PrimitiveBool   Bool
+  | PrimitiveString String
   deriving(Show, Ord, Eq)
 
 data Import = Import {
