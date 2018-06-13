@@ -7,7 +7,7 @@ import Text.Parsec (parse, SourceName)
 parseSmurf :: SourceName -> String -> String
 parseSmurf file s =
   case parse smurf file s of
-    Left  err    -> show err    ++ "\n"
+    Left  err    -> show      err    ++ "\n"
     Right result -> showSmurf result ++ "\n"
 
 -- | a somewhat pretty printer, it doesn't convert all the way back to the

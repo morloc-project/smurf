@@ -1,8 +1,9 @@
 module Smurf.Lexer (
     integer
   , float
-  , quoted
+  , stringLiteral
   , boolean
+  , whiteSpace
   , op
   , reserved
   , name
@@ -52,14 +53,17 @@ lexer = Token.makeTokenParser style
             ]
           }
 
+whiteSpace :: Parser ()
+whiteSpace = Token.whiteSpace lexer
+
 integer :: Parser Integer
 integer = Token.integer lexer
 
 float :: Parser Double
 float = Token.float lexer
 
-quoted :: Parser String
-quoted = do
+stringLiteral :: Parser String
+stringLiteral = do
   _ <- char '"'
   s <- many ((char '\\' >> char '"' ) <|> noneOf "\"")
   _ <- char '"'
@@ -84,7 +88,7 @@ typename :: Parser String
 typename = do
   s <- satisfy DC.isUpper
   ss <- many alphaNum
-  spaces
+  whiteSpace
   return (s : ss)
 
 -- | match any non-space character
@@ -94,14 +98,11 @@ nonSpace = noneOf " \n\t\r\v"
 path :: Parser [String]
 path = do
   path <- sepBy name (char '/')
-  spaces
+  whiteSpace
   return path
 
 comma :: Parser String
-comma = do
-  c <- char ','
-  ss <- many (satisfy DC.isSpace)
-  return (c : ss)
+comma = Token.comma lexer
 
 -- | matches all trailing space
 chop :: Parser String

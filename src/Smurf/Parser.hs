@@ -12,6 +12,7 @@ import qualified Smurf.Lexer as Tok
 
 smurf :: Parser [Top]
 smurf = do
+  Tok.whiteSpace
   result <- many topPiece 
   eof
   return result
@@ -40,7 +41,10 @@ aTopImport = do
   return $ TopImport i
 
 parens :: _ -> Parser a
-parens = between (char '(') (char ')')
+parens p = do
+  x <- between (char '(') (char ')') p
+  Tok.whiteSpace
+  return x
 
 braces :: _ -> Parser a
 braces = between (char '{') (char '}')
@@ -56,7 +60,6 @@ aSimpleImport :: Parser Import
 aSimpleImport = do
   Tok.reserved "import" 
   path <- Tok.path
-  spaces
   qual <- optionMaybe (Tok.op "as" >> Tok.name)
   return $ Import path qual Nothing
 
@@ -68,7 +71,6 @@ aRestrictedImport = do
   -- TODO: I am also importing ontologies, how should that be handled?
   -- TODO: at very least, I am also importing types
   functions <- parens (sepBy1 Tok.name Tok.comma)
-  spaces
   return $ Import path Nothing (Just functions)
 
 -- | parses a 'source' header, returning the language
@@ -78,7 +80,7 @@ aSource = do
   lang <- many1 Tok.nonSpace
   Tok.chop
   source <- many Tok.line
-  spaces
+  Tok.whiteSpace
   return $ Source lang source
 
 aDeclaration :: Parser Statement
@@ -109,5 +111,5 @@ constraint :: Parser String
 constraint = do
   -- TODO - replace with real constraint parser
   s <- many1 alphaNum
-  spaces
+  Tok.whiteSpace 
   return s
