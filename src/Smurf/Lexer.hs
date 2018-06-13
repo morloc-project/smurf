@@ -14,6 +14,9 @@ module Smurf.Lexer (
   , chop
   , space'
   , line
+  , parens
+  , braces
+  , brackets
 ) where
 
 import Text.Parsec hiding (State)
@@ -36,7 +39,10 @@ lexer = Token.makeTokenParser style
           , Token.identLetter     = alphaNum <|> oneOf "_.'"
           , Token.opStart         = Token.opLetter Lang.emptyDef
           , Token.opLetter        = oneOf ":!$%&*+./<=>?@\\^|-~"
-          , Token.reservedOpNames = ["=", "::", "+", "-", "^", "/", "//", "%", "->", ";"]
+          , Token.reservedOpNames = [
+                "=", "::", "+", "-", "^", "/", "//", "%", "->", ";",
+                "(", ")", "{", "}"
+              ]
           , Token.reservedNames = [
                 "where"
               , "import"
@@ -53,14 +59,26 @@ lexer = Token.makeTokenParser style
             ]
           }
 
+parens = Token.parens lexer
+braces = Token.braces lexer
+brackets = Token.brackets lexer
+
 whiteSpace :: Parser ()
+integer    :: Parser Integer
+float      :: Parser Double
+op         :: String -> Parser ()
+reserved   :: String -> Parser ()
+name       :: Parser String
+comma      :: Parser String
+
 whiteSpace = Token.whiteSpace lexer
+integer    = Token.integer    lexer
+float      = Token.float      lexer
+op         = Token.reservedOp lexer
+reserved   = Token.reserved   lexer
+name       = Token.identifier lexer
+comma      = Token.comma      lexer
 
-integer :: Parser Integer
-integer = Token.integer lexer
-
-float :: Parser Double
-float = Token.float lexer
 
 stringLiteral :: Parser String
 stringLiteral = do
@@ -73,15 +91,6 @@ boolean :: Parser Bool
 boolean = do
   s <- string "True" <|> string "False"
   return (read s)
-
-op :: String -> Parser ()
-op = Token.reservedOp lexer
-
-reserved :: String -> Parser ()
-reserved = Token.reserved lexer
-
-name :: Parser String
-name = Token.identifier lexer
 
 -- | a legal non-generic type name
 typename :: Parser String
@@ -100,9 +109,6 @@ path = do
   path <- sepBy name (char '/')
   whiteSpace
   return path
-
-comma :: Parser String
-comma = Token.comma lexer
 
 -- | matches all trailing space
 chop :: Parser String

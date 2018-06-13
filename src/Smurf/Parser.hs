@@ -40,15 +40,6 @@ aTopImport = do
     <|> try aSimpleImport
   return $ TopImport i
 
-parens :: _ -> Parser a
-parens p = do
-  x <- between (char '(') (char ')') p
-  Tok.whiteSpace
-  return x
-
-braces :: _ -> Parser a
-braces = between (char '{') (char '}')
-
 aStatement :: Parser Statement
 aStatement = do
   s <-  try aSignature
@@ -70,7 +61,7 @@ aRestrictedImport = do
   Tok.reserved "import"
   -- TODO: I am also importing ontologies, how should that be handled?
   -- TODO: at very least, I am also importing types
-  functions <- parens (sepBy1 Tok.name Tok.comma)
+  functions <- Tok.parens (sepBy1 Tok.name Tok.comma)
   return $ Import path Nothing (Just functions)
 
 -- | parses a 'source' header, returning the language
@@ -103,7 +94,7 @@ aSignature = do
   output <- Tok.typename
   constraints <- option [] (
       Tok.reserved "where" >>
-      braces (sepBy1 constraint (Tok.op ";"))
+      Tok.braces (sepBy1 constraint (Tok.op ";"))
     )
   return $ Signature typename inputs output constraints
 
