@@ -5,6 +5,11 @@ module Smurf.Data (
   , Source(..)
   , Expression(..)
   , Primitive(..)
+  , BExpr(..)
+  , AExpr(..)
+  , Bop
+  , Rop
+  , Aop
   , InputType
   , OutputType
   , Type
@@ -40,6 +45,26 @@ data Primitive
   | PrimitiveString String
   deriving(Show, Ord, Eq)
 
+data BExpr
+  = BExprBool Bool
+  | BExprNot BExpr
+  | BExprBBinOp Bop BExpr BExpr
+  | BExprRBinOp Rop AExpr AExpr
+  deriving(Show, Ord, Eq)
+
+data AExpr
+  = AExprName    Name
+  | AExprInt     Integer
+  | AExprReal    Double
+  | AExprFunc    Name [AExpr] -- includes array access
+  | AExprBinOp   Aop AExpr AExpr
+  | AExprNegate  AExpr
+  deriving(Show, Ord, Eq)
+
+type Bop = String
+type Rop = String
+type Aop = String
+
 data Import = Import {
       importPath :: [Name]
     , importQualifier :: Maybe Name
@@ -52,5 +77,6 @@ instance Show Source where
 type InputType  = Type
 type OutputType = Type
 type Type       = String
-type Constraint = String
+type Constraint = BExpr
 type Name       = String
+type Op         = String

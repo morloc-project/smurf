@@ -17,6 +17,9 @@ module Smurf.Lexer (
   , parens
   , braces
   , brackets
+  , relativeBinOp
+  , logicalBinOp
+  , arithmeticBinOp
 ) where
 
 import Text.Parsec hiding (State)
@@ -137,3 +140,28 @@ line = do
   l <- many (noneOf "\n")
   newline
   return $ (s ++ l)
+
+relativeBinOp :: Parser String
+relativeBinOp = 
+      (string "==")
+  <|> (string "<=")
+  <|> (string ">=")
+  <|> (string "!=")
+  <?> "a numeric comparison operator" 
+
+logicalBinOp :: Parser String
+logicalBinOp =
+      (string "and")
+  <|> (string "or")
+  <?> "a logical operator" 
+
+arithmeticBinOp :: Parser String
+arithmeticBinOp =
+      (string "+")
+  <|> (string "-")
+  <|> (string "*")
+  <|> (string "^")
+  <|> (string "%")
+  <|> try (string "//")
+  <|> (string "/")
+  <?> "a numeric operator" 

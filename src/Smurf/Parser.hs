@@ -92,11 +92,11 @@ aPrimitiveExpr = do
 
 aPrimitive :: Parser Primitive
 aPrimitive =
-        try Tok.float -- this must go before integer
-    <|> try Tok.integer
-    <|> try Tok.boolean
-    <|> try Tok.stringLiteral
-    <?> "a primitive"
+      try Tok.float -- this must go before integer
+  <|> try Tok.integer
+  <|> try Tok.boolean
+  <|> try Tok.stringLiteral
+  <?> "a primitive"
 
 anApplication :: Parser Expression
 anApplication = do
@@ -111,18 +111,45 @@ aSignature :: Parser Statement
 aSignature = do
   function <- Tok.name
   Tok.op "::"
-  inputs <- sepBy1 constraint Tok.comma
+  inputs <- sepBy1 Tok.typename Tok.comma
   Tok.op "->"
   output <- Tok.typename
   constraints <- option [] (
       Tok.reserved "where" >>
-      Tok.braces (sepBy1 constraint (Tok.op ";"))
+      Tok.braces (sepBy1 aBooleanExpr (Tok.op ";"))
     )
   return $ Signature function inputs output constraints
 
-constraint :: Parser String
-constraint = do
-  -- TODO - replace with real constraint parser
-  s <- many1 alphaNum
-  Tok.whiteSpace 
-  return s
+aBooleanExpr :: Parser BExpr
+aBooleanExpr =
+      try (Tok.parens aBooleanExpr)
+  <|> try aRelativeExpr
+  <|> try aBooleanBinOp
+  -- <|> try Tok.name (sepBy Tok.name whitespace)
+  -- <|> try Tok.boolean
+  <?> "an expression that reduces to True/False"
+
+aBooleanBinOp :: Parser BExpr
+aBooleanBinOp = do
+  a <- aBooleanExpr
+  op <- Tok.relativeBinOp
+  b <- aBooleanExpr
+  return $ BExprBBinOp op a b
+
+aRelativeExpr :: Parser BExpr
+aRelativeExpr = do
+  a <- anArithmeticExpr
+  op <- Tok.arithmeticBinOp
+  b <- anArithmeticExpr
+  return $ BExprRBinOp op a b
+
+anArithmeticExpr :: Parser AExpr
+anArithmeticExpr = do
+  -- TODO fill in other possibilities
+  x <- Tok.integer
+  return $ toExpr x
+  where
+    toExpr :: Primitive -> AExpr
+    toExpr (PrimitiveInt x) = AExprInt x
+    toExpr (PrimitiveReal x) = AExprReal x
+    toExpr _ = undefined
