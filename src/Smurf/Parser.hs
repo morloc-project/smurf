@@ -1,6 +1,3 @@
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE PartialTypeSignatures #-}
-
 module Smurf.Parser (smurf) where
 
 import Text.Parsec hiding (State)
