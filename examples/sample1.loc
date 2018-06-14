@@ -42,8 +42,8 @@ matrixMult :: Matrix, Matrix -> Matrix where (
 );
 
 matrixMult :: Matrix, Matrix -> Matrix where (
-    a and b
-  , c or d
+    a > ((b - 2) ^ 5)
+  , c < d
 );
 
 foo :: Matrix;

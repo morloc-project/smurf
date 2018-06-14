@@ -1,6 +1,7 @@
 module Smurf.Parser (smurf) where
 
 import Text.Parsec hiding (State)
+import qualified Text.Parsec.Expr as TPE
 import Text.Parsec.String (Parser)
 import Control.Monad.State
 
@@ -149,38 +150,46 @@ relativeExpr = do
   b <- arithmeticExpr
   return $ BExprRBinOp op a b
 
-arithmeticExpr :: Parser AExpr
-arithmeticExpr = do
-  -- TODO fill in other possibilities
-  x <-  Tok.integerP
-    <|> Tok.floatP
-  return $ toExpr x
+arithmeticExpr
+  = TPE.buildExpressionParser arithmeticTable term
+  <?> "expression"
+
+term
+  = do
+      Tok.parens arithmeticExpr
+  <|> val'
+  <|> var'
+  <?> "simple expression. Currently only integers are allowed"
   where
-    toExpr :: Primitive -> AExpr
-    toExpr (PrimitiveInt x) = AExprInt x
-    toExpr (PrimitiveReal x) = AExprReal x
-    toExpr _ = undefined
+    val' = do
+      x <- primitive
+      return $ toExpr' x
 
+    var' = do
+      x <- Tok.name
+      return $ AExprName x 
 
--- expr = buildExpressionParser table term
---      <?> "expression"
---
--- term =  parens expr
---      <|> natural
---      <?> "simple expression"
---
--- arithmeticTable
---   = [
---       [prefix "-" negate, prefix "+" id]
---     , [binary "^" (^) AssocRight]
---     , [ binary "*" (*) AssocLeft,
---       , binary "/" (div) AssocLeft,
---       , binary "%" (mod)
---       , binary "//" (quot)
---       ]
---     , [binary "+" (+) AssocLeft, binary "-" (-) AssocLeft]
---   ]
---
--- binary  name fun assoc = Infix (do{ reservedOp name; return fun }) assoc
--- prefix  name fun       = Prefix (do{ reservedOp name; return fun })
--- postfix name fun       = Postfix (do{ reservedOp name; return fun })
+    toExpr' :: Primitive -> AExpr
+    toExpr' (PrimitiveInt x) = AExprInt x
+    toExpr' (PrimitiveReal x) = AExprReal x
+    toExpr' _ = undefined
+
+arithmeticTable
+  = [
+      [ prefix "-" (AExprUnaryOp Neg)
+      , prefix "+" (AExprUnaryOp Pos)
+      ]             
+    , [ binary "^"  (AExprBinOp Pow) TPE.AssocRight
+      ]
+    , [ binary "*"  (AExprBinOp Mul) TPE.AssocLeft
+      , binary "/"  (AExprBinOp Div) TPE.AssocLeft
+      , binary "%"  (AExprBinOp Mod) TPE.AssocLeft
+      , binary "//" (AExprBinOp Quo) TPE.AssocLeft
+      ]
+    , [ binary "+"  (AExprBinOp Add) TPE.AssocLeft
+      , binary "-"  (AExprBinOp Sub) TPE.AssocLeft
+      ]
+  ]
+
+binary name fun assoc = TPE.Infix  (do{ Tok.op name; return fun }) assoc
+prefix name fun       = TPE.Prefix (do{ Tok.op name; return fun })

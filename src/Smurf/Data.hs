@@ -7,9 +7,10 @@ module Smurf.Data (
   , Primitive(..)
   , BExpr(..)
   , AExpr(..)
+  , UnaryOp(..)
+  , BinOp(..)
   , Bop
   , Rop
-  , Aop
   , InputType
   , OutputType
   , Type
@@ -57,13 +58,19 @@ data AExpr
   = AExprName Name
   | AExprInt Integer
   | AExprReal Double
-  | AExprBinOp Aop AExpr AExpr
-  | AExprNegate AExpr
+  | AExprBinOp BinOp AExpr AExpr
+  | AExprUnaryOp UnaryOp AExpr
+  | AExprUnOp AExpr
+  deriving(Show, Ord, Eq)
+
+data UnaryOp = Neg | Pos
+  deriving(Show, Ord, Eq)
+
+data BinOp = Add | Sub | Mul | Div | Pow | Mod | Quo
   deriving(Show, Ord, Eq)
 
 type Bop = String
 type Rop = String
-type Aop = String
 
 data Import = Import {
       importPath :: [Name]

@@ -53,7 +53,8 @@ lexer = Token.makeTokenParser style
           , Token.opLetter        = oneOf ":!$%&*+./<=>?@\\^|-~"
           , Token.reservedOpNames = [
                 "=", "::", "+", "-", "^", "/", "//", "%", "->", ";",
-                "(", ")", "{", "}"
+                "(", ")", "{", "}",
+                "<", ">", "==", "<=", ">=", "!="
               ]
           , Token.reservedNames = [
                 "where"
@@ -166,8 +167,10 @@ line = do
 relativeBinOp :: Parser String
 relativeBinOp = do
   op <-  (string "==")
-     <|> (string "<=")
-     <|> (string ">=")
+     <|> try (string "<=")
+     <|> try (string ">=")
+     <|> (string "<")
+     <|> (string ">")
      <|> (string "!=")
      <?> "a numeric comparison operator" 
   whiteSpace
