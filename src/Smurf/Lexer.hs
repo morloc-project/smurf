@@ -3,6 +3,13 @@ module Smurf.Lexer (
   , float
   , stringLiteral
   , boolean
+
+  -- fuck this shit
+  , integerP
+  , floatP
+  , stringLiteralP
+  , booleanP
+
   , whiteSpace
   , op
   , reserved
@@ -68,41 +75,56 @@ parens = Token.parens lexer
 braces = Token.braces lexer
 brackets = Token.brackets lexer
 
+integer    :: Parser Integer
+float      :: Parser Double
 whiteSpace :: Parser ()
 op         :: String -> Parser ()
 reserved   :: String -> Parser ()
 name       :: Parser String
 comma      :: Parser String
 
+integer    = Token.integer lexer
+float      = Token.float lexer
 whiteSpace = Token.whiteSpace lexer
 op         = Token.reservedOp lexer
 reserved   = Token.reserved   lexer
 name       = Token.identifier lexer
 comma      = Token.comma      lexer
 
-
-integer :: Parser D.Primitive 
-integer = do
-  x <- Token.integer lexer
-  return $ D.PrimitiveInt x
-
-float :: Parser D.Primitive
-float = do
-  x <- Token.float lexer
-  return $ D.PrimitiveReal x
-
-stringLiteral :: Parser D.Primitive 
+stringLiteral :: Parser String
 stringLiteral = do
   _ <- char '"'
   s <- many ((char '\\' >> char '"' ) <|> noneOf "\"")
   _ <- char '"'
-  return $ D.PrimitiveString s
+  whiteSpace
+  return s
 
-boolean :: Parser D.Primitive
+boolean :: Parser Bool 
 boolean = do
   s <- string "True" <|> string "False"
-  return $ D.PrimitiveBool (read s)
+  whiteSpace
+  return $ (read s :: Bool)
 
+
+integerP :: Parser D.Primitive
+integerP = do
+  x <- integer
+  return $ D.PrimitiveInt x
+
+floatP :: Parser D.Primitive
+floatP = do
+  x <- float
+  return $ D.PrimitiveReal x
+
+stringLiteralP :: Parser D.Primitive 
+stringLiteralP = do
+  s <- stringLiteral
+  return $ D.PrimitiveString s
+
+booleanP :: Parser D.Primitive
+booleanP = do
+  s <- boolean
+  return $ D.PrimitiveBool s
 
 -- | a legal non-generic type name
 typename :: Parser String
@@ -142,26 +164,32 @@ line = do
   return $ (s ++ l)
 
 relativeBinOp :: Parser String
-relativeBinOp = 
-      (string "==")
-  <|> (string "<=")
-  <|> (string ">=")
-  <|> (string "!=")
-  <?> "a numeric comparison operator" 
+relativeBinOp = do
+  op <-  (string "==")
+     <|> (string "<=")
+     <|> (string ">=")
+     <|> (string "!=")
+     <?> "a numeric comparison operator" 
+  whiteSpace
+  return op 
 
 logicalBinOp :: Parser String
-logicalBinOp =
-      (string "and")
-  <|> (string "or")
-  <?> "a logical operator" 
+logicalBinOp = do
+  op <-  (string "and")
+     <|> (string "or")
+     <?> "a logical operator" 
+  whiteSpace
+  return op 
 
 arithmeticBinOp :: Parser String
-arithmeticBinOp =
-      (string "+")
-  <|> (string "-")
-  <|> (string "*")
-  <|> (string "^")
-  <|> (string "%")
-  <|> try (string "//")
-  <|> (string "/")
-  <?> "a numeric operator" 
+arithmeticBinOp = do
+  op <-  (string "+")
+     <|> (string "-")
+     <|> (string "*")
+     <|> (string "^")
+     <|> (string "%")
+     <|> try (string "//")
+     <|> (string "/")
+     <?> "a numeric operator" 
+  whiteSpace
+  return op 

@@ -1,0 +1,64 @@
+# yolo
+
+import Foo/Bar as FB
+import Foo/Biz
+from Foo/Baz import (foo, bar, baz)
+from Foo/Baz import (foo)
+
+# Index :: x:Int where {
+#     x > 0
+# }
+#
+# Probability :: x:Real where {
+#     0 <= x <= 1
+# }
+#
+# Indexed :: f a where {
+#     exists len :: f a -> i:Index
+#     exists get :: i:Index, x:(f a) -> a where {
+#         i <= len x
+#     }
+# }
+#
+# List = Indexed List a
+#
+# subseq :: x:[a], i:Index, j:Index -> y:[a] where {
+#    j <= len x
+#    i <= j
+#    len y == j - i + 1
+#    y[k] == x[k + i - 1]
+# }
+
+# matrixMult :: Matrix<m1,n1>, Matrix<m2,n2> -> Matrix<m3,n3> where (
+#     n1 == m2 ,
+#     m3 == m1 ,
+#     n3 == n2
+# )
+
+matrixMult :: Matrix, Matrix -> Matrix where (
+    a and b
+    # n1 == m2 ,
+    # m3 == m1 ,
+    # n3 == n2
+)
+
+x = 5;
+
+x = (foo 5);
+
+x = foo (bar 4) (baz 6.5);
+
+source R
+  
+  library(magrittr)
+  runif(10) %>%
+    sum
+
+source python
+    
+    def foo(x):
+        x * 2
+    
+    #: index2int :: Cast => Index -> Int
+    def index2int(i):
+        return (i - 1)

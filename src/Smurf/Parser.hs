@@ -10,7 +10,7 @@ import qualified Smurf.Lexer as Tok
 smurf :: Parser [Top]
 smurf = do
   Tok.whiteSpace
-  result <- many topPiece 
+  result <- many topPiece
   eof
   return result
 
@@ -92,10 +92,10 @@ aPrimitiveExpr = do
 
 aPrimitive :: Parser Primitive
 aPrimitive =
-      try Tok.float -- this must go before integer
-  <|> try Tok.integer
-  <|> try Tok.boolean
-  <|> try Tok.stringLiteral
+      try Tok.floatP -- this must go before integer
+  <|> try Tok.integerP
+  <|> try Tok.booleanP
+  <|> try Tok.stringLiteralP
   <?> "a primitive"
 
 anApplication :: Parser Expression
@@ -116,8 +116,9 @@ aSignature = do
   output <- Tok.typename
   constraints <- option [] (
       Tok.reserved "where" >>
-      Tok.braces (sepBy1 aBooleanExpr (Tok.op ";"))
+      Tok.parens (sepBy1 aBooleanExpr (Tok.op ","))
     )
+  Tok.whiteSpace
   return $ Signature function inputs output constraints
 
 aBooleanExpr :: Parser BExpr
@@ -125,28 +126,35 @@ aBooleanExpr =
       try (Tok.parens aBooleanExpr)
   <|> try aRelativeExpr
   <|> try aBooleanBinOp
-  -- <|> try Tok.name (sepBy Tok.name whitespace)
-  -- <|> try Tok.boolean
   <?> "an expression that reduces to True/False"
 
 aBooleanBinOp :: Parser BExpr
 aBooleanBinOp = do
-  a <- aBooleanExpr
-  op <- Tok.relativeBinOp
-  b <- aBooleanExpr
+  a <- name'
+  op <- Tok.logicalBinOp
+  b <- name'
   return $ BExprBBinOp op a b
+  where
+    name' = do
+      s <- Tok.name
+      return $ BExprName s
+
+    bool' = do
+      s <- Tok.boolean
+      return $ BExprBool s
 
 aRelativeExpr :: Parser BExpr
 aRelativeExpr = do
   a <- anArithmeticExpr
-  op <- Tok.arithmeticBinOp
+  op <- Tok.relativeBinOp
   b <- anArithmeticExpr
   return $ BExprRBinOp op a b
 
 anArithmeticExpr :: Parser AExpr
 anArithmeticExpr = do
   -- TODO fill in other possibilities
-  x <- Tok.integer
+  x <-  Tok.integerP
+    <|> Tok.floatP
   return $ toExpr x
   where
     toExpr :: Primitive -> AExpr

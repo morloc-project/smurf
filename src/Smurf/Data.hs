@@ -46,19 +46,19 @@ data Primitive
   deriving(Show, Ord, Eq)
 
 data BExpr
-  = BExprBool Bool
+  = BExprName Name
+  | BExprBool Bool
   | BExprNot BExpr
   | BExprBBinOp Bop BExpr BExpr
   | BExprRBinOp Rop AExpr AExpr
   deriving(Show, Ord, Eq)
 
 data AExpr
-  = AExprName    Name
-  | AExprInt     Integer
-  | AExprReal    Double
-  | AExprFunc    Name [AExpr] -- includes array access
-  | AExprBinOp   Aop AExpr AExpr
-  | AExprNegate  AExpr
+  = AExprName Name
+  | AExprInt Integer
+  | AExprReal Double
+  | AExprBinOp Aop AExpr AExpr
+  | AExprNegate AExpr
   deriving(Show, Ord, Eq)
 
 type Bop = String
