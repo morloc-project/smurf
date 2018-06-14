@@ -36,9 +36,9 @@ from Foo/Baz import (foo)
 # )
 
 matrixMult :: Matrix, Matrix -> Matrix where (
-    n1 and m2 ,
-    m3 or m1 ,
-    n3 and n2
+    (n1 and m2) or (n2 and x)
+  , m3 or m1
+  , n3 and n2
 );
 
 matrixMult :: Matrix, Matrix -> Matrix where (

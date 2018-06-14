@@ -180,6 +180,9 @@ logicalBinOp :: Parser String
 logicalBinOp = do
   op <-  (string "and")
      <|> (string "or")
+     <|> (string "xor")
+     <|> (string "nand")
+     <|> (string "not")
      <?> "a logical operator" 
   whiteSpace
   return op 

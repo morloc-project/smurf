@@ -123,18 +123,25 @@ signature = do
 
 booleanExpr :: Parser BExpr
 booleanExpr =
-      try (Tok.parens booleanExpr)
+      try booleanBinOp
+  <|> try (Tok.parens booleanExpr)
   <|> try relativeExpr
-  <|> try booleanBinOp
   <?> "an expression that reduces to True/False"
 
 booleanBinOp :: Parser BExpr
 booleanBinOp = do
-  a <- name'
+  a <- bterm'
   op <- Tok.logicalBinOp
-  b <- name'
+  b <- bterm'
   return $ BExprBBinOp op a b
   where
+    bterm' = do
+      s <-  name'
+        <|> bool'
+        <|> Tok.parens booleanExpr
+        <?> "boolean expression"
+      return s
+
     name' = do
       s <- Tok.name
       return $ BExprName s
