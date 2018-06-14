@@ -46,6 +46,8 @@ matrixMult :: Matrix, Matrix -> Matrix where (
   , c or d
 );
 
+foo :: Matrix;
+
 x = 5;
 
 x = (foo 5);

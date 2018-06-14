@@ -10,49 +10,49 @@ import qualified Smurf.Lexer as Tok
 smurf :: Parser [Top]
 smurf = do
   Tok.whiteSpace
-  result <- many topPiece
+  result <- many top
   eof
   return result
 
-topPiece :: Parser Top
-topPiece =
-      try aTopSource 
-  <|> try aTopStatement
-  <|> try aTopImport
+top :: Parser Top
+top =
+      try topSource 
+  <|> try topStatement
+  <|> try topImport
   <?> "Top. Maybe you are missing a semicolon?"
 
-aTopSource :: Parser Top
-aTopSource = do
-  s <- aSource
+topSource :: Parser Top
+topSource = do
+  s <- source
   return $ TopSource s
 
-aTopStatement :: Parser Top
-aTopStatement = do
-  s <- aStatement
+topStatement :: Parser Top
+topStatement = do
+  s <- statement
   return $ TopStatement s
 
-aTopImport :: Parser Top
-aTopImport = do
-  i <-  try aRestrictedImport
-    <|> try aSimpleImport
+topImport :: Parser Top
+topImport = do
+  i <-  try restrictedImport
+    <|> try simpleImport
   return $ TopImport i
 
-aStatement :: Parser Statement
-aStatement = do
-  s <-  try aSignature
-    <|> try aDeclaration
+statement :: Parser Statement
+statement = do
+  s <-  try signature
+    <|> try declaration
   Tok.op ";"
   return $ s
 
-aSimpleImport :: Parser Import
-aSimpleImport = do
+simpleImport :: Parser Import
+simpleImport = do
   Tok.reserved "import" 
   path <- Tok.path
   qual <- optionMaybe (Tok.op "as" >> Tok.name)
   return $ Import path qual Nothing
 
-aRestrictedImport :: Parser Import
-aRestrictedImport = do
+restrictedImport :: Parser Import
+restrictedImport = do
   Tok.reserved "from"
   path <- Tok.path
   Tok.reserved "import"
@@ -62,8 +62,8 @@ aRestrictedImport = do
   return $ Import path Nothing (Just functions)
 
 -- | parses a 'source' header, returning the language
-aSource :: Parser Source
-aSource = do
+source :: Parser Source
+source = do
   Tok.reserved "source"
   lang <- many1 Tok.nonSpace
   Tok.chop
@@ -71,64 +71,64 @@ aSource = do
   Tok.whiteSpace
   return $ Source lang source
 
-aDeclaration :: Parser Statement
-aDeclaration = do
+declaration :: Parser Statement
+declaration = do
   varname <- Tok.name
   Tok.op "="
-  value <- anExpression
+  value <- expression
   return $ Declaration varname value 
 
-anExpression :: Parser Expression
-anExpression =
-      try (Tok.parens anExpression)
-  <|> try anApplication
-  <|> try aPrimitiveExpr
+expression :: Parser Expression
+expression =
+      try (Tok.parens expression)
+  <|> try application
+  <|> try primitiveExpr
   <?> "an expression"
 
-aPrimitiveExpr :: Parser Expression
-aPrimitiveExpr = do
-  x <- aPrimitive
+primitiveExpr :: Parser Expression
+primitiveExpr = do
+  x <- primitive
   return $ ExprPrimitive x
 
-aPrimitive :: Parser Primitive
-aPrimitive =
+primitive :: Parser Primitive
+primitive =
       try Tok.floatP -- this must go before integer
   <|> try Tok.integerP
   <|> try Tok.booleanP
   <|> try Tok.stringLiteralP
   <?> "a primitive"
 
-anApplication :: Parser Expression
-anApplication = do
+application :: Parser Expression
+application = do
   function <- Tok.name
-  arguments <- sepBy anExpression Tok.whiteSpace
+  arguments <- sepBy expression Tok.whiteSpace
   return $ ExprApplication function arguments
 
-
 -- | typename :: [input] -> output constraints 
--- TODO: make the output optional
-aSignature :: Parser Statement
-aSignature = do
+signature :: Parser Statement
+signature = do
   function <- Tok.name
   Tok.op "::"
   inputs <- sepBy1 Tok.typename Tok.comma
-  Tok.op "->"
-  output <- Tok.typename
+  output <- optionMaybe (
+      Tok.op "->" >>
+      Tok.typename
+    )
   constraints <- option [] (
       Tok.reserved "where" >>
-      Tok.parens (sepBy1 aBooleanExpr (Tok.op ","))
+      Tok.parens (sepBy1 booleanExpr (Tok.op ","))
     )
   return $ Signature function inputs output constraints
 
-aBooleanExpr :: Parser BExpr
-aBooleanExpr =
-      try (Tok.parens aBooleanExpr)
-  <|> try aRelativeExpr
-  <|> try aBooleanBinOp
+booleanExpr :: Parser BExpr
+booleanExpr =
+      try (Tok.parens booleanExpr)
+  <|> try relativeExpr
+  <|> try booleanBinOp
   <?> "an expression that reduces to True/False"
 
-aBooleanBinOp :: Parser BExpr
-aBooleanBinOp = do
+booleanBinOp :: Parser BExpr
+booleanBinOp = do
   a <- name'
   op <- Tok.logicalBinOp
   b <- name'
@@ -142,15 +142,15 @@ aBooleanBinOp = do
       s <- Tok.boolean
       return $ BExprBool s
 
-aRelativeExpr :: Parser BExpr
-aRelativeExpr = do
-  a <- anArithmeticExpr
+relativeExpr :: Parser BExpr
+relativeExpr = do
+  a <- arithmeticExpr
   op <- Tok.relativeBinOp
-  b <- anArithmeticExpr
+  b <- arithmeticExpr
   return $ BExprRBinOp op a b
 
-anArithmeticExpr :: Parser AExpr
-anArithmeticExpr = do
+arithmeticExpr :: Parser AExpr
+arithmeticExpr = do
   -- TODO fill in other possibilities
   x <-  Tok.integerP
     <|> Tok.floatP
@@ -160,3 +160,27 @@ anArithmeticExpr = do
     toExpr (PrimitiveInt x) = AExprInt x
     toExpr (PrimitiveReal x) = AExprReal x
     toExpr _ = undefined
+
+
+-- expr = buildExpressionParser table term
+--      <?> "expression"
+--
+-- term =  parens expr
+--      <|> natural
+--      <?> "simple expression"
+--
+-- arithmeticTable
+--   = [
+--       [prefix "-" negate, prefix "+" id]
+--     , [binary "^" (^) AssocRight]
+--     , [ binary "*" (*) AssocLeft,
+--       , binary "/" (div) AssocLeft,
+--       , binary "%" (mod)
+--       , binary "//" (quot)
+--       ]
+--     , [binary "+" (+) AssocLeft, binary "-" (-) AssocLeft]
+--   ]
+--
+-- binary  name fun assoc = Infix (do{ reservedOp name; return fun }) assoc
+-- prefix  name fun       = Prefix (do{ reservedOp name; return fun })
+-- postfix name fun       = Postfix (do{ reservedOp name; return fun })

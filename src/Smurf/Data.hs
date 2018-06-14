@@ -29,7 +29,7 @@ data Top
 data Source = Source Name [String] deriving(Ord, Eq)
 
 data Statement
-  = Signature Name [InputType] OutputType [Constraint]
+  = Signature Name [InputType] (Maybe OutputType) [Constraint]
   | Declaration Name Expression
   deriving(Show, Ord, Eq)
 
