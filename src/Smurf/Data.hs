@@ -7,15 +7,14 @@ module Smurf.Data (
   , Primitive(..)
   , BExpr(..)
   , AExpr(..)
-  , InputType
-  , OutputType
-  , Type
-  , Constraint
+  , MType(..)
   , Name
 ) where
 
 import Data.List (intersperse)
 import Data.Maybe (maybe)
+
+type Name = String
 
 data Top
   = TopImport Import 
@@ -25,8 +24,17 @@ data Top
 
 data Source = Source Name [String] deriving(Ord, Eq)
 
+data MType
+  = MSpecific Name [MType]
+  | MGeneric Name [MType]
+  | MList MType
+  | MTuple [MType]
+  | MRecord Name [(Name, MType)]
+  | MEmpty
+  deriving(Show, Ord, Eq)
+
 data Statement
-  = Signature Name [InputType] (Maybe OutputType) [Constraint]
+  = Signature Name [MType] (Maybe MType) [BExpr]
   | Declaration Name Expression
   deriving(Show, Ord, Eq)
 
@@ -81,9 +89,3 @@ data Import = Import {
 
 instance Show Source where
   show (Source n ls) = unlines (("source " ++ n) : ls)
-
-type InputType  = Type
-type OutputType = Type
-type Type       = String
-type Constraint = BExpr
-type Name       = String

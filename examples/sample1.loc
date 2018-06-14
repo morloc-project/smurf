@@ -43,12 +43,15 @@ foo :: Matrix;
 
 # TODO - make the following statement parseable
 # -- This will require:
-# [ ] add parameterized types
-# [ ] add "[a]" list syntax
+# [x] add parameterized types
+# [x] add "[a]" list syntax
+# [x] add record syntax
 # [ ] add labels <label>:<name> syntax
 # [ ] allow function calls in expressions
 # [ ] allow index access in constraints
-#
+
+x1 :: [a], (), (a,b,(a)) -> Man {foo :: Int};
+
 # subseq :: x:[a], i:Index, j:Index -> y:[a] where {
 #    j <= len x
 #    i <= j

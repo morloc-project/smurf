@@ -105,21 +105,76 @@ application = do
   arguments <- sepBy expression Tok.whiteSpace
   return $ ExprApplication function arguments
 
--- | typename :: [input] -> output constraints 
+-- | function :: [input] -> output constraints 
 signature :: Parser Statement
 signature = do
   function <- Tok.name
   Tok.op "::"
-  inputs <- sepBy1 Tok.typename Tok.comma
+  inputs <- sepBy1 mtype Tok.comma
   output <- optionMaybe (
       Tok.op "->" >>
-      Tok.typename
+      mtype
     )
   constraints <- option [] (
       Tok.reserved "where" >>
-      Tok.parens (sepBy1 booleanExpr (Tok.op ","))
+      Tok.parens (sepBy1 booleanExpr Tok.comma)
     )
   return $ Signature function inputs output constraints
+
+mtype :: Parser MType
+mtype =
+      list'       -- [a]
+  <|> paren'      -- () | (a) | (a,b,...)
+  <|> try record' -- Foo {a :: t, ...}
+  <|> specific'   -- Foo
+  <|> generic'    -- foo
+  <?> "type"
+  where
+    -- [ <type> ]
+    list' :: Parser MType
+    list' = do
+      s <- Tok.brackets mtype
+      return $ MList s
+
+    -- ( <type>, <type>, ... )
+    paren' :: Parser MType
+    paren' = do
+      s <- Tok.parens (sepBy mtype (Tok.comma)) 
+      return $ case s of
+        []  -> MEmpty
+        [x] -> x
+        xs  -> MTuple xs
+
+    -- <name> <type> <type> ...
+    specific' :: Parser MType
+    specific' = do
+      s <- Tok.specificType
+      ss <- many mtype 
+      return $ MSpecific s ss
+
+    -- <name> <type> <type> ...
+    generic' :: Parser MType
+    generic' = do
+      -- TODO - the genericType should automatically fail on keyword conflict
+      notFollowedBy (Tok.reserved "where")
+      s <- Tok.genericType
+      ss <- many mtype 
+      return $ MGeneric s ss
+
+    -- <name> { <name> :: <type>, <name> :: <type>, ... }
+    record' :: Parser MType
+    record' = do
+      n <- Tok.specificType
+      xs <- Tok.braces (sepBy1 recordEntry' Tok.comma)
+      return $ MRecord n xs
+
+    -- (<name> = <type>)
+    recordEntry' :: Parser (Name, MType)
+    recordEntry' = do
+      n <- Tok.name
+      Tok.op "::"
+      t <- mtype
+      return (n, t)
 
 booleanExpr :: Parser BExpr
 booleanExpr =

@@ -14,7 +14,8 @@ module Smurf.Lexer (
   , op
   , reserved
   , name
-  , typename
+  , specificType
+  , genericType
   , nonSpace
   , path
   , comma
@@ -128,12 +129,15 @@ booleanP = do
   return $ D.PrimitiveBool s
 
 -- | a legal non-generic type name
-typename :: Parser String
-typename = do
+specificType :: Parser String
+specificType = do
   s <- satisfy DC.isUpper
   ss <- many alphaNum
   whiteSpace
   return (s : ss)
+
+genericType :: Parser String
+genericType = Token.identifier lexer 
 
 -- | match any non-space character
 nonSpace :: Parser Char
