@@ -19,7 +19,7 @@ topPiece =
       try aTopSource 
   <|> try aTopStatement
   <|> try aTopImport
-  <?> "Top"
+  <?> "Top. Maybe you are missing a semicolon?"
 
 aTopSource :: Parser Top
 aTopSource = do
@@ -41,7 +41,7 @@ aStatement :: Parser Statement
 aStatement = do
   s <-  try aSignature
     <|> try aDeclaration
-  Tok.op ";" -- for now, every statement ends in a semicolon
+  Tok.op ";"
   return $ s
 
 aSimpleImport :: Parser Import
@@ -118,7 +118,6 @@ aSignature = do
       Tok.reserved "where" >>
       Tok.parens (sepBy1 aBooleanExpr (Tok.op ","))
     )
-  Tok.whiteSpace
   return $ Signature function inputs output constraints
 
 aBooleanExpr :: Parser BExpr
