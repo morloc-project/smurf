@@ -124,16 +124,22 @@ signature = do
 booleanExpr :: Parser BExpr
 booleanExpr =
       try booleanBinOp
-  <|> try (Tok.parens booleanExpr)
   <|> try relativeExpr
+  <|> try not'
+  <|> try (Tok.parens booleanExpr)
   <?> "an expression that reduces to True/False"
+  where
+    not' = do
+      Tok.reserved "not"
+      e <- booleanExpr
+      return $ NOT e
 
 booleanBinOp :: Parser BExpr
 booleanBinOp = do
   a <- bterm'
   op <- Tok.logicalBinOp
   b <- bterm'
-  return $ BExprBBinOp op a b
+  return $ binop' op a b
   where
     bterm' = do
       s <-  name'
@@ -150,12 +156,24 @@ booleanBinOp = do
       s <- Tok.boolean
       return $ BExprBool s
 
+    binop' op a b
+      | op == "and" = AND a b
+      | op == "or"  = OR  a b
+
 relativeExpr :: Parser BExpr
 relativeExpr = do
   a <- arithmeticExpr
   op <- Tok.relativeBinOp
   b <- arithmeticExpr
-  return $ BExprRBinOp op a b
+  return $ relop' op a b
+  where
+    relop' op a b
+      | op == "==" = EQ' a b
+      | op == "!=" = NE' a b
+      | op == ">"  = GT' a b
+      | op == "<"  = LT' a b
+      | op == ">=" = GE' a b
+      | op == "<=" = LE' a b
 
 arithmeticExpr
   = TPE.buildExpressionParser arithmeticTable term
@@ -183,18 +201,18 @@ term
 
 arithmeticTable
   = [
-      [ prefix "-" (AExprUnaryOp Neg)
-      , prefix "+" (AExprUnaryOp Pos)
+      [ prefix "-" Neg
+      , prefix "+" Pos
       ]             
-    , [ binary "^"  (AExprBinOp Pow) TPE.AssocRight
+    , [ binary "^"  Pow TPE.AssocRight
       ]
-    , [ binary "*"  (AExprBinOp Mul) TPE.AssocLeft
-      , binary "/"  (AExprBinOp Div) TPE.AssocLeft
-      , binary "%"  (AExprBinOp Mod) TPE.AssocLeft
-      , binary "//" (AExprBinOp Quo) TPE.AssocLeft
+    , [ binary "*"  Mul TPE.AssocLeft
+      , binary "/"  Div TPE.AssocLeft
+      , binary "%"  Mod TPE.AssocLeft
+      , binary "//" Quo TPE.AssocLeft
       ]
-    , [ binary "+"  (AExprBinOp Add) TPE.AssocLeft
-      , binary "-"  (AExprBinOp Sub) TPE.AssocLeft
+    , [ binary "+"  Add TPE.AssocLeft
+      , binary "-"  Sub TPE.AssocLeft
       ]
   ]
 

@@ -22,13 +22,6 @@ from Foo/Baz import (foo)
 #
 # List = Indexed List a
 #
-# subseq :: x:[a], i:Index, j:Index -> y:[a] where {
-#    j <= len x
-#    i <= j
-#    len y == j - i + 1
-#    y[k] == x[k + i - 1]
-# }
-
 # matrixMult :: Matrix<m1,n1>, Matrix<m2,n2> -> Matrix<m3,n3> where (
 #     n1 == m2 ,
 #     m3 == m1 ,
@@ -47,6 +40,30 @@ matrixMult :: Matrix, Matrix -> Matrix where (
 );
 
 foo :: Matrix;
+
+# TODO - make the following statement parseable
+# -- This will require:
+# [ ] add parameterized types
+# [ ] add "[a]" list syntax
+# [ ] add labels <label>:<name> syntax
+# [ ] allow function calls in expressions
+# [ ] allow index access in constraints
+#
+# subseq :: x:[a], i:Index, j:Index -> y:[a] where {
+#    j <= len x
+#    i <= j
+#    len y == j - i + 1
+#    y[k] == x[k + i - 1]
+# }
+
+# TODO - add manifold metadata statements
+# [ ] node labels
+# [ ] export
+# [ ] document
+# [ ] cache
+# [ ] effect
+# [ ] args
+# [ ] checks - global constraints
 
 x = 5;
 

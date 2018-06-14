@@ -7,10 +7,6 @@ module Smurf.Data (
   , Primitive(..)
   , BExpr(..)
   , AExpr(..)
-  , UnaryOp(..)
-  , BinOp(..)
-  , Bop
-  , Rop
   , InputType
   , OutputType
   , Type
@@ -49,28 +45,33 @@ data Primitive
 data BExpr
   = BExprName Name
   | BExprBool Bool
-  | BExprNot BExpr
-  | BExprBBinOp Bop BExpr BExpr
-  | BExprRBinOp Rop AExpr AExpr
+  -- relative operators
+  | EQ' AExpr AExpr
+  | NE' AExpr AExpr
+  | GT' AExpr AExpr
+  | LT' AExpr AExpr
+  | GE' AExpr AExpr
+  | LE' AExpr AExpr
+  -- logical operators
+  | NOT BExpr
+  | AND BExpr BExpr
+  | OR  BExpr BExpr
   deriving(Show, Ord, Eq)
 
 data AExpr
   = AExprName Name
   | AExprInt Integer
   | AExprReal Double
-  | AExprBinOp BinOp AExpr AExpr
-  | AExprUnaryOp UnaryOp AExpr
-  | AExprUnOp AExpr
+  | Pos AExpr
+  | Neg AExpr
+  | Add AExpr AExpr
+  | Sub AExpr AExpr
+  | Mul AExpr AExpr
+  | Div AExpr AExpr
+  | Pow AExpr AExpr
+  | Mod AExpr AExpr
+  | Quo AExpr AExpr
   deriving(Show, Ord, Eq)
-
-data UnaryOp = Neg | Pos
-  deriving(Show, Ord, Eq)
-
-data BinOp = Add | Sub | Mul | Div | Pow | Mod | Quo
-  deriving(Show, Ord, Eq)
-
-type Bop = String
-type Rop = String
 
 data Import = Import {
       importPath :: [Name]
@@ -86,4 +87,3 @@ type OutputType = Type
 type Type       = String
 type Constraint = BExpr
 type Name       = String
-type Op         = String
