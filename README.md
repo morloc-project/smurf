@@ -1,11 +1,8 @@
 # Smurf
 
-This code was based initially on [this](https://gist.github.com/sw17ch/2048516)
-cool github gist by John Van Enk.
-
-Then I decided `indents` was way more hassel than it was worth for my purposes.
-
-Now it is evolving towards being the new Morloc parser.
+This is a complete project. The purpose was to develop a new parser for
+`morloc` in a clean environment. The code will be ported back into the [morloc
+project](https://github.com/arendsee/morloc).
 
 ## Installation
 
