@@ -5,9 +5,9 @@ import Foo/Biz
 from Foo/Baz import (foo, bar, baz)
 from Foo/Baz import (foo)
 
-Index :: x:Int where {
+Index :: x:Int where (
     x > 0
-}
+);
 
 # Indexed :: f a where {
 #     exists len :: f a -> i:Index
@@ -38,6 +38,12 @@ subseq :: x:[a], i:Index, j:Index -> y:[a] where (
   , y[k] == x[k + i - 1]
 );
 
+# TODO
+# [ ] add function declarations
+# [ ] add function composition
+
+foo a b = bar;
+
 # TODO - add manifold metadata statements
 # [x] node labels
 # [ ] export
@@ -51,7 +57,7 @@ x = 5;
 
 x = (beelzebub:foo 5);
 
-x = foo (bar 4) (baz 6.5);
+x yolo = foo (bar 4) (baz 6.5);
 
 source R
   

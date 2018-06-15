@@ -75,9 +75,10 @@ source = do
 declaration :: Parser Statement
 declaration = do
   varname <- Tok.name
+  bndvars <- many Tok.name
   Tok.op "="
   value <- expression
-  return $ Declaration varname value 
+  return $ Declaration varname bndvars value 
 
 expression :: Parser Expression
 expression =

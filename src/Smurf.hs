@@ -19,5 +19,5 @@ showSmurf = (unlines . map showSmurf') where
     unwords ["from", show path, "import", show rest, "as", show qual]
   showSmurf' (TopStatement (Signature name ins out constraints)) =
     unwords [name, "::", show ins, "->", show out, "where", show constraints]  
-  showSmurf' (TopSource x) = show x 
+  showSmurf' (TopSource x) = ""
   showSmurf' x = show x

@@ -35,8 +35,15 @@ data MType
   deriving(Show, Ord, Eq)
 
 data Statement
-  = Signature Name [MType] (Maybe MType) [BExpr]
-  | Declaration Name Expression
+  = Signature
+      Name           -- lhs
+      [MType]        -- inputs
+      (Maybe MType)  -- optional output
+      [BExpr]        -- constraints
+  | Declaration
+      Name           -- lhs
+      [Name]         -- bound variables
+      Expression     -- rhs
   deriving(Show, Ord, Eq)
 
 data Expression
