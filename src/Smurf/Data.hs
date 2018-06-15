@@ -53,7 +53,7 @@ data Primitive
   deriving(Show, Ord, Eq)
 
 data BExpr
-  = BExprName Name
+  = BExprFunc Name [Name]
   | BExprBool Bool
   -- relative operators
   | EQ' AExpr AExpr
@@ -69,7 +69,7 @@ data BExpr
   deriving(Show, Ord, Eq)
 
 data AExpr
-  = AExprName Name
+  = AExprFunc Name [Name]
   | AExprInt Integer
   | AExprReal Double
   | Pos AExpr

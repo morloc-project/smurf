@@ -28,9 +28,9 @@ from Foo/Baz import (foo)
 #     n3 == n2
 # )
 
-matrixMult :: Matrix, Matrix -> Matrix where (
+foo :: Matrix, Matrix -> Matrix where (
     (n1 and m2) or (n2 and x)
-  , m3 or m1
+  , m3 or (isgood m1)
   , n3 and n2
 );
 
@@ -47,17 +47,17 @@ foo :: Matrix;
 # [x] add "[a]" list syntax
 # [x] add record syntax
 # [x] add labels <label>:<name> syntax
-# [ ] allow function calls in expressions
+# [x] allow function calls in expressions
 # [ ] allow index access in constraints
 
 x1 :: zanzibar:[a], (), groovy:(Int,b,(a)) -> bob:Man {foo :: bill:Int};
 
-# subseq :: x:[a], i:Index, j:Index -> y:[a] where {
-#    j <= len x
-#    i <= j
-#    len y == j - i + 1
-#    y[k] == x[k + i - 1]
-# }
+subseq :: x:[a], i:Index, j:Index -> y:[a] where (
+    j <= len x
+  , i <= j
+  , len y == j - i + 1
+  # , y[k] == x[k + i - 1]
+);
 
 # TODO - add manifold metadata statements
 # [x] node labels

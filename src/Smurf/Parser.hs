@@ -182,18 +182,25 @@ mtype =
       t <- mtype
       return (n, t)
 
+
 booleanExpr :: Parser BExpr
 booleanExpr =
       try booleanBinOp
   <|> try relativeExpr
   <|> try not'
   <|> try (Tok.parens booleanExpr)
+  <|> try application'
   <?> "an expression that reduces to True/False"
   where
     not' = do
       Tok.reserved "not"
       e <- booleanExpr
       return $ NOT e
+
+    application' = do
+      n <- Tok.name
+      ns <- many Tok.name
+      return $ BExprFunc n ns
 
 booleanBinOp :: Parser BExpr
 booleanBinOp = do
@@ -203,15 +210,16 @@ booleanBinOp = do
   return $ binop' op a b
   where
     bterm' = do
-      s <-  name'
+      s <-  application'
         <|> bool'
         <|> Tok.parens booleanExpr
         <?> "boolean expression"
       return s
 
-    name' = do
-      s <- Tok.name
-      return $ BExprName s
+    application' = do
+      n <- Tok.name
+      ns <- many Tok.name
+      return $ BExprFunc n ns
 
     bool' = do
       s <- Tok.boolean
@@ -253,7 +261,8 @@ term
 
     var' = do
       x <- Tok.name
-      return $ AExprName x 
+      xs <- option [] (many Tok.name)
+      return $ AExprFunc x xs
 
     toExpr' :: Primitive -> AExpr
     toExpr' (PrimitiveInt x) = AExprInt x
