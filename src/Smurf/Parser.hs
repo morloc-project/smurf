@@ -251,6 +251,7 @@ arithmeticExpr
 term
   = do
       Tok.parens arithmeticExpr
+  <|> try access'
   <|> val'
   <|> var'
   <?> "simple expression. Currently only integers are allowed"
@@ -263,6 +264,11 @@ term
       x <- Tok.name
       xs <- option [] (many Tok.name)
       return $ AExprFunc x xs
+
+    access' = do
+      x <- Tok.name
+      ids <- Tok.brackets (sepBy1 arithmeticExpr Tok.comma)
+      return $ AExprAccess x ids
 
     toExpr' :: Primitive -> AExpr
     toExpr' (PrimitiveInt x) = AExprInt x

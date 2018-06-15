@@ -72,6 +72,7 @@ data AExpr
   = AExprFunc Name [Name]
   | AExprInt Integer
   | AExprReal Double
+  | AExprAccess Name [AExpr]
   | Pos AExpr
   | Neg AExpr
   | Add AExpr AExpr
