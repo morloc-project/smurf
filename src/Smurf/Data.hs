@@ -15,6 +15,7 @@ import Data.List (intersperse)
 import Data.Maybe (maybe)
 
 type Name = String
+type Tag = String
 
 data Top
   = TopImport Import 
@@ -25,11 +26,11 @@ data Top
 data Source = Source Name [String] deriving(Ord, Eq)
 
 data MType
-  = MSpecific Name [MType]
-  | MGeneric Name [MType]
-  | MList MType
-  | MTuple [MType]
-  | MRecord Name [(Name, MType)]
+  = MSpecific Name [MType] Tag
+  | MGeneric Name [MType] Tag
+  | MList MType Tag
+  | MTuple [MType] Tag 
+  | MRecord Name [(Name, MType)] Tag
   | MEmpty
   deriving(Show, Ord, Eq)
 
@@ -40,6 +41,7 @@ data Statement
 
 data Expression
   = ExprPrimitive Primitive
+  -- add tag
   | ExprApplication Name [Expression]
   deriving(Show, Ord, Eq)
 

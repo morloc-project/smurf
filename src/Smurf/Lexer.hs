@@ -14,6 +14,7 @@ module Smurf.Lexer (
   , op
   , reserved
   , name
+  , tag
   , specificType
   , genericType
   , nonSpace
@@ -53,7 +54,7 @@ lexer = Token.makeTokenParser style
           , Token.opStart         = Token.opLetter Lang.emptyDef
           , Token.opLetter        = oneOf ":!$%&*+./<=>?@\\^|-~"
           , Token.reservedOpNames = [
-                "=", "::", "+", "-", "^", "/", "//", "%", "->", ";",
+                "=", "::", ":", "+", "-", "^", "/", "//", "%", "->", ";",
                 "(", ")", "{", "}",
                 "<", ">", "==", "<=", ">=", "!="
               ]
@@ -92,6 +93,16 @@ op         = Token.reservedOp lexer
 reserved   = Token.reserved   lexer
 name       = Token.identifier lexer
 comma      = Token.comma      lexer
+
+tag p =
+  option "" (try tag')
+  where
+    tag' = do
+      l <- many1 alphaNum
+      whiteSpace
+      op ":"
+      lookAhead p
+      return l
 
 stringLiteral :: Parser String
 stringLiteral = do

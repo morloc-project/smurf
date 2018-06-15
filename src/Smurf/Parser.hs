@@ -133,40 +133,45 @@ mtype =
     -- [ <type> ]
     list' :: Parser MType
     list' = do
+      l <- Tok.tag (char '[')
       s <- Tok.brackets mtype
-      return $ MList s
+      return $ MList s l
 
     -- ( <type>, <type>, ... )
     paren' :: Parser MType
     paren' = do
+      l <- Tok.tag (char '(')
       s <- Tok.parens (sepBy mtype (Tok.comma)) 
       return $ case s of
         []  -> MEmpty
         [x] -> x
-        xs  -> MTuple xs
+        xs  -> MTuple xs l
 
     -- <name> <type> <type> ...
     specific' :: Parser MType
     specific' = do
+      l <- Tok.tag Tok.specificType
       s <- Tok.specificType
       ss <- many mtype 
-      return $ MSpecific s ss
+      return $ MSpecific s ss l
 
     -- <name> <type> <type> ...
     generic' :: Parser MType
     generic' = do
       -- TODO - the genericType should automatically fail on keyword conflict
       notFollowedBy (Tok.reserved "where")
+      l <- Tok.tag Tok.genericType
       s <- Tok.genericType
       ss <- many mtype 
-      return $ MGeneric s ss
+      return $ MGeneric s ss l
 
     -- <name> { <name> :: <type>, <name> :: <type>, ... }
     record' :: Parser MType
     record' = do
+      l <- Tok.tag Tok.specificType
       n <- Tok.specificType
       xs <- Tok.braces (sepBy1 recordEntry' Tok.comma)
-      return $ MRecord n xs
+      return $ MRecord n xs l
 
     -- (<name> = <type>)
     recordEntry' :: Parser (Name, MType)

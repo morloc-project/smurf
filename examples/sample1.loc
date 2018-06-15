@@ -46,11 +46,11 @@ foo :: Matrix;
 # [x] add parameterized types
 # [x] add "[a]" list syntax
 # [x] add record syntax
-# [ ] add labels <label>:<name> syntax
+# [x] add labels <label>:<name> syntax
 # [ ] allow function calls in expressions
 # [ ] allow index access in constraints
 
-x1 :: [a], (), (a,b,(a)) -> Man {foo :: Int};
+x1 :: zanzibar:[a], (), groovy:(Int,b,(a)) -> bob:Man {foo :: bill:Int};
 
 # subseq :: x:[a], i:Index, j:Index -> y:[a] where {
 #    j <= len x
