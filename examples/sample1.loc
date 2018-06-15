@@ -60,7 +60,7 @@ x1 :: zanzibar:[a], (), groovy:(Int,b,(a)) -> bob:Man {foo :: bill:Int};
 # }
 
 # TODO - add manifold metadata statements
-# [ ] node labels
+# [x] node labels
 # [ ] export
 # [ ] document
 # [ ] cache
@@ -70,7 +70,7 @@ x1 :: zanzibar:[a], (), groovy:(Int,b,(a)) -> bob:Man {foo :: bill:Int};
 
 x = 5;
 
-x = (foo 5);
+x = (beelzebub:foo 5);
 
 x = foo (bar 4) (baz 6.5);
 

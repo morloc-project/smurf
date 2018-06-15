@@ -101,9 +101,10 @@ primitive =
 
 application :: Parser Expression
 application = do
+  tag' <- Tok.tag Tok.name
   function <- Tok.name
   arguments <- sepBy expression Tok.whiteSpace
-  return $ ExprApplication function arguments
+  return $ ExprApplication function tag' arguments
 
 -- | function :: [input] -> output constraints 
 signature :: Parser Statement

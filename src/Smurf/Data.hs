@@ -42,7 +42,7 @@ data Statement
 data Expression
   = ExprPrimitive Primitive
   -- add tag
-  | ExprApplication Name [Expression]
+  | ExprApplication Name Tag [Expression]
   deriving(Show, Ord, Eq)
 
 data Primitive
