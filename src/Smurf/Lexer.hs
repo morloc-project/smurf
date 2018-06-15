@@ -56,7 +56,8 @@ lexer = Token.makeTokenParser style
           , Token.reservedOpNames = [
                 "=", "::", ":", "+", "-", "^", "/", "//", "%", "->", ";",
                 "(", ")", "{", "}",
-                "<", ">", "==", "<=", ">=", "!="
+                "<", ">", "==", "<=", ">=", "!=",
+                "."
               ]
           , Token.reservedNames = [
                 "where"

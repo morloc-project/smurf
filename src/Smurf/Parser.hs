@@ -82,10 +82,15 @@ declaration = do
 
 expression :: Parser Expression
 expression =
-      try (Tok.parens expression)
-  <|> try application
-  <|> try primitiveExpr
+      -- currently this just handles "."
+      try (TPE.buildExpressionParser functionTable term')
+  <|> term'
   <?> "an expression"
+  where
+    term' =
+          try (Tok.parens expression)
+      <|> try application
+      <|> try primitiveExpr
 
 primitiveExpr :: Parser Expression
 primitiveExpr = do
@@ -246,10 +251,10 @@ relativeExpr = do
       | op == "<=" = LE' a b
 
 arithmeticExpr
-  = TPE.buildExpressionParser arithmeticTable term
+  = TPE.buildExpressionParser arithmeticTable arithmeticTerm
   <?> "expression"
 
-term
+arithmeticTerm
   = do
       Tok.parens arithmeticExpr
   <|> try access'
@@ -292,6 +297,8 @@ arithmeticTable
       , binary "-"  Sub TPE.AssocLeft
       ]
   ]
+
+functionTable = [[ binary "."  ExprComposition TPE.AssocRight]]
 
 binary name fun assoc = TPE.Infix  (do{ Tok.op name; return fun }) assoc
 prefix name fun       = TPE.Prefix (do{ Tok.op name; return fun })

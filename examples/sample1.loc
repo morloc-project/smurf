@@ -39,10 +39,10 @@ subseq :: x:[a], i:Index, j:Index -> y:[a] where (
 );
 
 # TODO
-# [ ] add function declarations
-# [ ] add function composition
+# [x] add function declarations
+# [x] add function composition
 
-foo a b = bar;
+foo a b = bar . (baz . boo t);
 
 # TODO - add manifold metadata statements
 # [x] node labels
@@ -52,6 +52,10 @@ foo a b = bar;
 # [ ] effect
 # [ ] args
 # [ ] checks - global constraints
+
+# TODO - introspection
+# [ ] write up the whole AST
+# [ ] simplify the hell out of it
 
 x = 5;
 
