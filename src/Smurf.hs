@@ -1,23 +1,14 @@
 module Smurf (parseSmurf) where
 
-import Smurf.Data
-import Smurf.Parser
-import Text.Parsec (parse, SourceName)
+import System.IO
+import System.IO.Error
+import qualified Smurf.Lexer as L
+import qualified Smurf.Parser as P
+import qualified Smurf.AST as S
+import qualified Smurf.Evaluator as E
+import Codec.Binary.UTF8.String (encode)
 
-parseSmurf :: SourceName -> String -> String
-parseSmurf file s =
-  case parse smurf file s of
-    Left  err    -> show      err    ++ "\n"
-    Right result -> showSmurf result ++ "\n"
-
--- | a somewhat pretty printer, it doesn't convert all the way back to the
--- input code, although perhaps that would be a reasonable thing to do. 
-showSmurf :: [Top] -> String
-showSmurf = (unlines . map showSmurf') where
-  showSmurf' :: Top -> String
-  showSmurf' (TopImport (Import path qual rest)) =
-    unwords ["from", show path, "import", show rest, "as", show qual]
-  showSmurf' (TopStatement (Signature name ins out constraints)) =
-    unwords [name, "::", show ins, "->", show out, "where", show constraints]  
-  showSmurf' (TopSource x) = ""
-  showSmurf' x = show x
+parseSmurf :: String -> String
+parseSmurf s = case L.evalP P.parse (encode s) of
+  Right result -> show result ++ "\n"
+  Left err -> error err

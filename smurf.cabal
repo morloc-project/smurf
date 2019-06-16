@@ -1,24 +1,48 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 6592acd761c521789aea0ed0ef1e0daac17772df5910032941e3205cbd78dc3b
+
 name:           smurf
-version:        0.1.0.0
-description:    Nothing
+version:        0.0.0
+synopsis:       A temporary repo for testing material that will be ported to Morloc
+description:    See GitHub README <https://github.com/arendsee/smurf#readme>
+category:       Compiler
+homepage:       https://github.com/arendsee/smurf
+bug-reports:    https://github.com/arendsee/smurf/issues
+author:         Zebulun Arendsee
+maintainer:     zbwrbz@gmail.com
+copyright:      2019 Zebulun Arendsee
+license:        GPL-3
 build-type:     Simple
-cabal-version:  >= 1.10
 extra-source-files:
     README.md
 
+source-repository head
+  type: git
+  location: https://github.com/arendsee/smurf
+
 library
   exposed-modules:
-      Smurf 
-      Smurf.Data
-      Smurf.Parser
+      Smurf
+      Smurf.AST
+      Smurf.Evaluator
       Smurf.Lexer
+      Smurf.Parser
+  other-modules:
+      Paths_smurf
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5,
-      parsec,
-      text,
-      mtl
+      array
+    , base >=4.7 && <5
+    , mtl
+    , parsec
+    , text
+    , utf8-string
   default-language: Haskell2010
 
 executable smurf
@@ -27,8 +51,12 @@ executable smurf
       Paths_smurf
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
+    , mtl
+    , parsec
     , smurf
+    , text
+    , utf8-string
   default-language: Haskell2010

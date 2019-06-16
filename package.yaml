@@ -1,0 +1,34 @@
+name:             smurf
+version:          0.0.0
+homepage:         https://github.com/arendsee/smurf
+synopsis:         A temporary repo for testing material that will be ported to Morloc 
+description:      See GitHub README <https://github.com/arendsee/smurf#readme>
+category:         Compiler
+license:          GPL-3
+author:           "Zebulun Arendsee" 
+maintainer:       "zbwrbz@gmail.com"
+github:           "arendsee/smurf"
+bug-reports:      https://github.com/arendsee/smurf/issues
+copyright:        "2019 Zebulun Arendsee"
+
+extra-source-files:
+  - README.md
+
+dependencies:
+  - base >= 4.7 && < 5
+  - parsec
+  - text
+  - mtl
+  - array
+  - utf8-string
+
+library:
+  source-dirs: src
+
+executables:
+  smurf:
+    main:          Main.hs
+    source-dirs:   app
+    dependencies:
+      - base >= 4.7 && < 5
+      - smurf
