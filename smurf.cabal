@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6592acd761c521789aea0ed0ef1e0daac17772df5910032941e3205cbd78dc3b
+-- hash: 5a26986f52e8b28409144b10355d60f538559fe68a22e10e349a230935a24dc9
 
 name:           smurf
 version:        0.0.0
@@ -28,8 +28,7 @@ source-repository head
 library
   exposed-modules:
       Smurf
-      Smurf.AST
-      Smurf.Evaluator
+      Smurf.Data
       Smurf.Lexer
       Smurf.Parser
   other-modules:
