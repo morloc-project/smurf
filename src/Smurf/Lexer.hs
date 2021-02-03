@@ -25,9 +25,6 @@ module Smurf.Lexer (
   , parens
   , braces
   , brackets
-  , relativeBinOp
-  , logicalBinOp
-  , arithmeticBinOp
 ) where
 
 import Text.Parsec hiding (State)
@@ -53,9 +50,11 @@ lexer = Token.makeTokenParser style
           , Token.opStart         = Token.opLetter Lang.emptyDef
           , Token.opLetter        = oneOf ":!$%&*+./<=>?@\\^|-~"
           , Token.reservedOpNames = [
-                "=", "::", ":", "+", "-", "^", "/", "//", "%", "->", ";",
+                "=", "::",
+                -- ":", "+", "-", "^", "/", "//", "%",
+                "->", ";",
                 "(", ")", "{", "}",
-                "<", ">", "==", "<=", ">=", "!=",
+                -- "<", ">", "==", "<=", ">=", "!=",
                 "."
               ]
           , Token.reservedNames = [
@@ -175,38 +174,3 @@ line = do
   newline
   return $ s ++ l
 
-relativeBinOp :: Parser String
-relativeBinOp = do
-  op <-  string "=="
-     <|> try (string "<=")
-     <|> try (string ">=")
-     <|> string "<"
-     <|> string ">"
-     <|> string "!="
-     <?> "a numeric comparison operator" 
-  whiteSpace
-  return op 
-
-logicalBinOp :: Parser String
-logicalBinOp = do
-  op <-  string "and"
-     <|> string "or"
-     <|> string "xor"
-     <|> string "nand"
-     <|> string "not"
-     <?> "a logical operator" 
-  whiteSpace
-  return op 
-
-arithmeticBinOp :: Parser String
-arithmeticBinOp = do
-  op <-  string "+"
-     <|> string "-"
-     <|> string "*"
-     <|> string "^"
-     <|> string "%"
-     <|> try (string "//")
-     <|> string "/"
-     <?> "a numeric operator" 
-  whiteSpace
-  return op 

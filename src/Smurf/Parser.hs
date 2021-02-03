@@ -17,24 +17,28 @@ smurf = do
 
 top :: Parser Top
 top =
-      try topSource 
-  <|> try topStatement
-  <|> try topImport
+      -- try topSource 
+  try topStatement
+  -- <|> try topImport
   <?> "Top. Maybe you are missing a semicolon?"
 
+{-
 topSource :: Parser Top
 topSource = do
   TopSource <$> source
+-}
 
 topStatement :: Parser Top
 topStatement = do
   TopStatement <$> statement
 
+{-
 topImport :: Parser Top
 topImport = do
   i <-  try restrictedImport
     <|> try simpleImport
   return $ TopImport i
+-}
 
 statement :: Parser Statement
 statement = do
@@ -43,6 +47,7 @@ statement = do
   Tok.op ";"
   return s
 
+{-
 simpleImport :: Parser Import
 simpleImport = do
   Tok.reserved "import" 
@@ -59,7 +64,9 @@ restrictedImport = do
   -- TODO: at very least, I am also importing types
   functions <- Tok.parens (sepBy1 Tok.name Tok.comma)
   return $ Import path Nothing (Just functions)
+-}
 
+{-
 -- | parses a 'source' header, returning the language
 source :: Parser Source
 source = do
@@ -69,6 +76,7 @@ source = do
   source <- many Tok.line
   Tok.whiteSpace
   return $ Source lang source
+-}
 
 declaration :: Parser Statement
 declaration = do
@@ -80,8 +88,8 @@ declaration = do
 expression :: Parser Expression
 expression =
       -- currently this just handles "."
-      try (TPE.buildExpressionParser functionTable term')
-  <|> term'
+      -- try (TPE.buildExpressionParser functionTable term')
+  term'
   <?> "an expression"
   where
     term' =
@@ -103,10 +111,10 @@ primitive =
 
 application :: Parser Expression
 application = do
-  tag' <- Tok.tag Tok.name
+  -- tag' <- Tok.tag Tok.name
   function <- Tok.name
   arguments <- sepBy expression Tok.whiteSpace
-  return $ ExprApplication function tag' arguments
+  return $ ExprApplication function arguments
 
 -- | function :: [input] -> output constraints 
 signature :: Parser Statement
@@ -118,11 +126,13 @@ signature = do
       Tok.op "->" >>
       mtype
     )
+{-
   constraints <- option [] (
       Tok.reserved "where" >>
       Tok.parens (sepBy1 booleanExpr Tok.comma)
     )
-  return $ Signature function inputs output constraints
+-}
+  return $ Signature function inputs output
 
 mtype :: Parser MType
 mtype =
@@ -184,7 +194,7 @@ mtype =
       t <- mtype
       return (n, t)
 
-
+{-
 booleanExpr :: Parser BExpr
 booleanExpr =
       try booleanBinOp
@@ -287,8 +297,9 @@ arithmeticTable
       , binary "-"  Sub TPE.AssocLeft
       ]
   ]
+-}
 
-functionTable = [[ binary "."  ExprComposition TPE.AssocRight]]
+-- functionTable = [[ binary "."  ExprComposition TPE.AssocRight]]
 
-binary name fun = TPE.Infix  (do { Tok.op name; return fun })
-prefix name fun = TPE.Prefix (do { Tok.op name; return fun })
+-- binary name fun = TPE.Infix  (do { Tok.op name; return fun })
+-- prefix name fun = TPE.Prefix (do { Tok.op name; return fun })
