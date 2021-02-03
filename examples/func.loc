@@ -1,0 +1,2 @@
+foo :: A -> B a;
+foo x = f (g x);
