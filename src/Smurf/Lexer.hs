@@ -4,7 +4,6 @@ module Smurf.Lexer (
   , stringLiteral
   , boolean
 
-  -- fuck this shit
   , integerP
   , floatP
   , stringLiteralP
@@ -117,28 +116,24 @@ boolean :: Parser Bool
 boolean = do
   s <- string "True" <|> string "False"
   whiteSpace
-  return $ (read s :: Bool)
+  return (read s :: Bool)
 
 
 integerP :: Parser D.Primitive
 integerP = do
-  x <- integer
-  return $ D.PrimitiveInt x
+  D.PrimitiveInt <$> integer
 
 floatP :: Parser D.Primitive
 floatP = do
-  x <- float
-  return $ D.PrimitiveReal x
+  D.PrimitiveReal <$> float
 
 stringLiteralP :: Parser D.Primitive 
 stringLiteralP = do
-  s <- stringLiteral
-  return $ D.PrimitiveString s
+  D.PrimitiveString <$> stringLiteral
 
 booleanP :: Parser D.Primitive
 booleanP = do
-  s <- boolean
-  return $ D.PrimitiveBool s
+  D.PrimitiveBool <$> boolean
 
 -- | a legal non-generic type name
 specificType :: Parser String
@@ -178,40 +173,40 @@ line = do
   s <- many1 space'
   l <- many (noneOf "\n")
   newline
-  return $ (s ++ l)
+  return $ s ++ l
 
 relativeBinOp :: Parser String
 relativeBinOp = do
-  op <-  (string "==")
+  op <-  string "=="
      <|> try (string "<=")
      <|> try (string ">=")
-     <|> (string "<")
-     <|> (string ">")
-     <|> (string "!=")
+     <|> string "<"
+     <|> string ">"
+     <|> string "!="
      <?> "a numeric comparison operator" 
   whiteSpace
   return op 
 
 logicalBinOp :: Parser String
 logicalBinOp = do
-  op <-  (string "and")
-     <|> (string "or")
-     <|> (string "xor")
-     <|> (string "nand")
-     <|> (string "not")
+  op <-  string "and"
+     <|> string "or"
+     <|> string "xor"
+     <|> string "nand"
+     <|> string "not"
      <?> "a logical operator" 
   whiteSpace
   return op 
 
 arithmeticBinOp :: Parser String
 arithmeticBinOp = do
-  op <-  (string "+")
-     <|> (string "-")
-     <|> (string "*")
-     <|> (string "^")
-     <|> (string "%")
+  op <-  string "+"
+     <|> string "-"
+     <|> string "*"
+     <|> string "^"
+     <|> string "%"
      <|> try (string "//")
-     <|> (string "/")
+     <|> string "/"
      <?> "a numeric operator" 
   whiteSpace
   return op 

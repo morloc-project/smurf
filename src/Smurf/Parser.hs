@@ -24,13 +24,11 @@ top =
 
 topSource :: Parser Top
 topSource = do
-  s <- source
-  return $ TopSource s
+  TopSource <$> source
 
 topStatement :: Parser Top
 topStatement = do
-  s <- statement
-  return $ TopStatement s
+  TopStatement <$> statement
 
 topImport :: Parser Top
 topImport = do
@@ -43,7 +41,7 @@ statement = do
   s <-  try signature
     <|> try declaration
   Tok.op ";"
-  return $ s
+  return s
 
 simpleImport :: Parser Import
 simpleImport = do
@@ -77,8 +75,7 @@ declaration = do
   varname <- Tok.name
   bndvars <- many Tok.name
   Tok.op "="
-  value <- expression
-  return $ Declaration varname bndvars value 
+  Declaration varname bndvars <$> expression
 
 expression :: Parser Expression
 expression =
@@ -94,8 +91,7 @@ expression =
 
 primitiveExpr :: Parser Expression
 primitiveExpr = do
-  x <- primitive
-  return $ ExprPrimitive x
+  ExprPrimitive <$> primitive
 
 primitive :: Parser Primitive
 primitive =
@@ -148,7 +144,7 @@ mtype =
     paren' :: Parser MType
     paren' = do
       l <- Tok.tag (char '(')
-      s <- Tok.parens (sepBy mtype (Tok.comma)) 
+      s <- Tok.parens (sepBy mtype Tok.comma)
       return $ case s of
         []  -> MEmpty
         [x] -> x
@@ -200,8 +196,7 @@ booleanExpr =
   where
     not' = do
       Tok.reserved "not"
-      e <- booleanExpr
-      return $ NOT e
+      NOT <$> booleanExpr
 
     application' = do
       n <- Tok.name
@@ -212,15 +207,13 @@ booleanBinOp :: Parser BExpr
 booleanBinOp = do
   a <- bterm'
   op <- Tok.logicalBinOp
-  b <- bterm'
-  return $ binop' op a b
+  binop' op a <$> bterm'
   where
     bterm' = do
-      s <-  application'
+      application'
         <|> bool'
         <|> Tok.parens booleanExpr
         <?> "boolean expression"
-      return s
 
     application' = do
       n <- Tok.name
@@ -228,8 +221,7 @@ booleanBinOp = do
       return $ BExprFunc n ns
 
     bool' = do
-      s <- Tok.boolean
-      return $ BExprBool s
+      BExprBool <$> Tok.boolean
 
     binop' op a b
       | op == "and" = AND a b
@@ -239,8 +231,7 @@ relativeExpr :: Parser BExpr
 relativeExpr = do
   a <- arithmeticExpr
   op <- Tok.relativeBinOp
-  b <- arithmeticExpr
-  return $ relop' op a b
+  relop' op a <$> arithmeticExpr
   where
     relop' op a b
       | op == "==" = EQ' a b
@@ -263,8 +254,7 @@ arithmeticTerm
   <?> "simple expression. Currently only integers are allowed"
   where
     val' = do
-      x <- primitive
-      return $ toExpr' x
+      toExpr' <$> primitive
 
     var' = do
       x <- Tok.name
@@ -300,5 +290,5 @@ arithmeticTable
 
 functionTable = [[ binary "."  ExprComposition TPE.AssocRight]]
 
-binary name fun assoc = TPE.Infix  (do{ Tok.op name; return fun }) assoc
-prefix name fun       = TPE.Prefix (do{ Tok.op name; return fun })
+binary name fun = TPE.Infix  (do { Tok.op name; return fun })
+prefix name fun = TPE.Prefix (do { Tok.op name; return fun })
