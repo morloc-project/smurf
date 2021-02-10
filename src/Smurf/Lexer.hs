@@ -111,7 +111,7 @@ comma = lexeme $ do
 integer :: Parser Integer
 integer = lexeme $
     do
-        num <- many digitChar
+        num <- some digitChar
         return $ read num
 
 float :: Parser Double
