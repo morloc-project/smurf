@@ -6,3 +6,4 @@ kbfnds k
 
 -}
 foo :: A -> B a;
+foo x y = f (g x y)
