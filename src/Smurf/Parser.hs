@@ -9,7 +9,7 @@ import Smurf.Data
 import qualified Smurf.Lexer as Tok
 
 smurf :: Tok.Parser [Top]
-smurf = Tok.whiteSpace >> Tok.lexeme (
+smurf = Tok.lexeme (
     do
         result <- many top
         eof
@@ -24,12 +24,12 @@ top =
 topStatement :: Tok.Parser Top
 topStatement = do
   s <- statement
-  char ';'
+  Tok.lexeme $ char ';'
   return $ TopStatement s
 
 statement :: Tok.Parser Statement
-statement = do try signature
-           <|> try declaration
+statement =  try signature
+         <|> try declaration
 
 declaration :: Tok.Parser Statement
 declaration = do

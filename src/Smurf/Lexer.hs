@@ -40,11 +40,12 @@ lexeme = L.lexeme whiteSpace
 
 whiteSpace :: Parser ()
 whiteSpace =
-    do
-        skipSome (oneOf " \n\t\r\v")
-            -- <|> L.skipLineComment "--"
-            -- <|> L.skipBlockCommentNested "{-" "-}"
+    skipMany (do
+        oneOf " \n\t\r\v"
         return ()
+        )
+        -- <|> L.skipLineComment "--"
+        -- <|> L.skipBlockCommentNested "{-" "-}"
 
 surround :: Parser a -> Parser a -> Parser b -> Parser b
 surround a b p =
@@ -64,13 +65,13 @@ braces :: Parser a -> Parser a
 braces = surround (char '{') (char '}')
 
 op :: String -> Parser ()
-op s =
+op s = lexeme $
     do
         string s
         return ()
 
 reserved :: String -> Parser ()
-reserved s =
+reserved s = lexeme $
     do
         string s
         return ()
