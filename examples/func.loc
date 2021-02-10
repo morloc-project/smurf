@@ -7,4 +7,5 @@ kbfnds k
 -}
 foo :: A -> B a
 -- more comments
-foo x y = f (g x y)
+foo x y =
+    f a (g x y)

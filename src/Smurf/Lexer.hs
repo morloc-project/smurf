@@ -21,6 +21,7 @@ module Smurf.Lexer
     , whiteSpace
     , whiteSpaceNewline
     , eol
+    , indent
     , path
     , comma
     , parens
@@ -33,6 +34,7 @@ import Text.Megaparsec.Char hiding (eol)
 import qualified Text.Megaparsec.Char.Lexer as L
 import Data.Char as DC
 import Data.Void
+import Control.Monad
 
 import qualified Smurf.Data as D
 type Parser = Parsec Void String
@@ -44,22 +46,25 @@ comments :: Parser ()
 comments =  L.skipLineComment "--"
         <|> L.skipBlockCommentNested "{-" "-}"
 
+spaces :: Parser ()
+spaces = Control.Monad.void $ oneOf " \t\r\v"
+
 whiteSpace :: Parser ()
-whiteSpace =
-    skipMany $ (do
-        oneOf " \t\r\v"
-        return ()
-    ) <|> comments
+whiteSpace =  skipMany
+           $  spaces
+          <|> comments
 
 eol :: Parser ()
 eol = char '\n' >> whiteSpaceNewline
 
+indent :: Ordering -> Pos -> Parser Pos
+indent = L.indentGuard spaces
+
 whiteSpaceNewline :: Parser ()
-whiteSpaceNewline =
-    skipMany $ (do
-        oneOf " \n\t\r\v"
-        return ()
-    ) <|> comments
+whiteSpaceNewline = skipMany
+     $  Control.Monad.void (char '\n')
+    <|> (lookAhead (many spaces >> char '\n') >> spaces)
+    <|> comments
 
 brackets :: Parser a -> Parser a
 brackets = between (char '[') (char ']')
@@ -71,16 +76,10 @@ braces :: Parser a -> Parser a
 braces = between (char '{') (char '}')
 
 op :: String -> Parser ()
-op s = lexeme $
-    do
-        string s
-        return ()
+op s = lexeme $ Control.Monad.void $ string s
 
 reserved :: String -> Parser ()
-reserved s = lexeme $
-    do
-        string s
-        return ()
+reserved s = lexeme $ Control.Monad.void $ string s
 
 reservedNames :: [String]
 reservedNames = [
@@ -110,9 +109,7 @@ name = lexeme $
             return v
 
 comma :: Parser ()
-comma = lexeme $ do
-    char ','
-    return ()
+comma = lexeme $ Control.Monad.void $ char ','
 
 integer :: Parser Integer
 integer = lexeme $
@@ -142,23 +139,19 @@ stringLiteral = lexeme $ do
 boolean :: Parser Bool 
 boolean = lexeme $ do
   s <- string "True" <|> string "False"
-  return (read s :: Bool)
+  return $ read s
 
 integerP :: Parser D.Primitive
-integerP = lexeme $ do
-  D.PrimitiveInt <$> integer
+integerP = lexeme $ D.PrimitiveInt <$> integer
 
 floatP :: Parser D.Primitive
-floatP = lexeme $ do
-  D.PrimitiveReal <$> float
+floatP = lexeme $ D.PrimitiveReal <$> float
 
 stringLiteralP :: Parser D.Primitive 
-stringLiteralP = lexeme $ do
-  D.PrimitiveString <$> stringLiteral
+stringLiteralP = lexeme $ D.PrimitiveString <$> stringLiteral
 
 booleanP :: Parser D.Primitive
-booleanP = lexeme $ do
-  D.PrimitiveBool <$> boolean
+booleanP = lexeme $ D.PrimitiveBool <$> boolean
 
 -- | a legal non-generic type name
 specificType :: Parser String

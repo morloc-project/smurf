@@ -29,14 +29,17 @@ topStatement = do
 
 statement :: Tok.Parser Statement
 statement =  try signature
-         <|> try declaration
+         <|> declaration
 
 declaration :: Tok.Parser Statement
-declaration = do
-  varname <- Tok.name
-  bndvars <- many Tok.name
-  Tok.op "="
-  Declaration varname bndvars <$> expression
+declaration =
+    do
+        level <- L.indentLevel
+        varname <- Tok.name
+        bndvars <- many Tok.name
+        Tok.op "="
+        optional $ Tok.eol >> Tok.indent GT level
+        Declaration varname bndvars <$> expression
 
 expression :: Tok.Parser Expression
 expression =
@@ -48,6 +51,7 @@ expression =
           try (Tok.parens expression)
       <|> try primitiveExpr
       <|> try application
+      <|> ExprName <$> Tok.name
 
 primitiveExpr :: Tok.Parser Expression
 primitiveExpr = ExprPrimitive <$> primitive
