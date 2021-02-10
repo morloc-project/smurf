@@ -1,2 +1,8 @@
+-- this is a comment
+{- kjbfnsdjk nk ndfbskj ns
+
+kbfnds k
+{-nested comment-}
+
+-}
 foo :: A -> B a;
-foo x = f (g x);

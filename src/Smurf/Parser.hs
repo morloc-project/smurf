@@ -9,7 +9,7 @@ import Smurf.Data
 import qualified Smurf.Lexer as Tok
 
 smurf :: Tok.Parser [Top]
-smurf = Tok.lexeme (
+smurf = Tok.whiteSpace >> Tok.lexeme (
     do
         result <- many top
         eof

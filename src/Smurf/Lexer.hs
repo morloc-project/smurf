@@ -40,12 +40,12 @@ lexeme = L.lexeme whiteSpace
 
 whiteSpace :: Parser ()
 whiteSpace =
-    skipMany (do
+    skipMany $ (do
         oneOf " \n\t\r\v"
         return ()
         )
-        -- <|> L.skipLineComment "--"
-        -- <|> L.skipBlockCommentNested "{-" "-}"
+        <|> L.skipLineComment "--"
+        <|> L.skipBlockCommentNested "{-" "-}"
 
 surround :: Parser a -> Parser a -> Parser b -> Parser b
 surround a b p =
