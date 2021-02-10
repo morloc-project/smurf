@@ -1,63 +1,82 @@
-module Smurf.Lexer (
-    integer
-  , float
-  , stringLiteral
-  , boolean
+module Smurf.Lexer
+    ( Parser
+    , integer
+    , float
+    , stringLiteral
+    , boolean
 
-  , integerP
-  , floatP
-  , stringLiteralP
-  , booleanP
+    , integerP
+    , floatP
+    , stringLiteralP
+    , booleanP
 
-  , whiteSpace
-  , op
-  , reserved
-  , name
-  , tag
-  , specificType
-  , genericType
-  , nonSpace
-  , path
-  , comma
-  , chop
-  , space'
-  , line
-  , parens
-  , braces
-  , brackets
-) where
+    , op
+    , reserved
+    , name
+    , tag
+    , specificType
+    , genericType
+    , nonSpace
+    , lexeme
+    , whiteSpace
+    , path
+    , comma
+    , parens
+    , braces
+    , brackets
+    ) where
 
-import Text.Parsec hiding (State)
-import Text.Parsec.String (Parser)
-import Control.Monad.State
-import qualified Data.Char as DC
-import qualified Text.Parsec.Language as Lang
-import qualified Text.Parsec.Token as Token
+import Text.Megaparsec
+import Text.Megaparsec.Char
+import qualified Text.Megaparsec.Char.Lexer as L
+import Data.Char as DC
+import Data.Void
 
 import qualified Smurf.Data as D
+type Parser = Parsec Void String
 
-lexer :: Token.TokenParser ()
-lexer = Token.makeTokenParser style
-  where
-  style = Lang.emptyDef {
-            Token.commentLine     = "#"
-          , Token.commentStart    = ""
-          , Token.commentEnd      = ""
-          , Token.nestedComments  = False
-          , Token.caseSensitive   = True
-          , Token.identStart      = letter <|> char '_'
-          , Token.identLetter     = alphaNum <|> oneOf "_.'"
-          , Token.opStart         = Token.opLetter Lang.emptyDef
-          , Token.opLetter        = oneOf ":!$%&*+./<=>?@\\^|-~"
-          , Token.reservedOpNames = [
-                "=", "::",
-                -- ":", "+", "-", "^", "/", "//", "%",
-                "->", ";",
-                "(", ")", "{", "}",
-                -- "<", ">", "==", "<=", ">=", "!=",
-                "."
-              ]
-          , Token.reservedNames = [
+lexeme :: Parser a -> Parser a
+lexeme = L.lexeme whiteSpace
+
+whiteSpace :: Parser ()
+whiteSpace =
+    do
+        skipSome (oneOf " \n\t\r\v")
+            -- <|> L.skipLineComment "--"
+            -- <|> L.skipBlockCommentNested "{-" "-}"
+        return ()
+
+surround :: Parser a -> Parser a -> Parser b -> Parser b
+surround a b p =
+    do
+        lexeme a
+        v <- lexeme p
+        lexeme b
+        return v
+
+brackets :: Parser a -> Parser a
+brackets = surround (char '[') (char ']')
+
+parens :: Parser a -> Parser a
+parens = surround (char '(') (char ')')
+
+braces :: Parser a -> Parser a
+braces = surround (char '{') (char '}')
+
+op :: String -> Parser ()
+op s =
+    do
+        string s
+        return ()
+
+reserved :: String -> Parser ()
+reserved s =
+    do
+        string s
+        return ()
+
+reservedNames :: [String]
+reservedNames = [
                 "where"
               , "import"
               , "from"
@@ -71,106 +90,87 @@ lexer = Token.makeTokenParser style
               , "nand"
               , "not"
             ]
-          }
 
-parens = Token.parens lexer
-braces = Token.braces lexer
-brackets = Token.brackets lexer
+name :: Parser String
+name = lexeme $
+    do
+        head <- letterChar <|> char '_'
+        tail <- many $ alphaNumChar <|> oneOf "_.'"
+        let v = head : tail
+        if v `elem` reservedNames then
+            fail "used reserved word as an identifier"
+        else
+            return v
 
-integer    :: Parser Integer
-float      :: Parser Double
-whiteSpace :: Parser ()
-op         :: String -> Parser ()
-reserved   :: String -> Parser ()
-name       :: Parser String
-comma      :: Parser String
+comma :: Parser ()
+comma = lexeme $ do
+    char ','
+    return ()
 
-integer    = Token.integer lexer
-float      = Token.float lexer
-whiteSpace = Token.whiteSpace lexer
-op         = Token.reservedOp lexer
-reserved   = Token.reserved   lexer
-name       = Token.identifier lexer
-comma      = Token.comma      lexer
+integer :: Parser Integer
+integer = lexeme $
+    do
+        num <- many digitChar
+        return $ read num
+
+float :: Parser Double
+float = lexeme L.float
 
 tag p =
   option "" (try tag')
   where
     tag' = do
-      l <- many1 alphaNum
-      whiteSpace
-      op ":"
-      lookAhead p
-      return l
+        l <- lexeme $ some alphaNumChar
+        lexeme $ op ":"
+        lookAhead $ lexeme p
+        return l
 
 stringLiteral :: Parser String
-stringLiteral = do
+stringLiteral = lexeme $ do
   _ <- char '"'
   s <- many ((char '\\' >> char '"' ) <|> noneOf "\"")
   _ <- char '"'
-  whiteSpace
   return s
 
 boolean :: Parser Bool 
-boolean = do
+boolean = lexeme $ do
   s <- string "True" <|> string "False"
-  whiteSpace
   return (read s :: Bool)
 
-
 integerP :: Parser D.Primitive
-integerP = do
+integerP = lexeme $ do
   D.PrimitiveInt <$> integer
 
 floatP :: Parser D.Primitive
-floatP = do
+floatP = lexeme $ do
   D.PrimitiveReal <$> float
 
 stringLiteralP :: Parser D.Primitive 
-stringLiteralP = do
+stringLiteralP = lexeme $ do
   D.PrimitiveString <$> stringLiteral
 
 booleanP :: Parser D.Primitive
-booleanP = do
+booleanP = lexeme $ do
   D.PrimitiveBool <$> boolean
 
 -- | a legal non-generic type name
 specificType :: Parser String
-specificType = do
+specificType = lexeme $ do
   s <- satisfy DC.isUpper
-  ss <- many alphaNum
-  whiteSpace
-  return (s : ss)
+  ss <- many alphaNumChar
+  return $ s : ss
 
 genericType :: Parser String
-genericType = Token.identifier lexer 
+genericType = lexeme $
+    do
+        head <- satisfy (\c -> ('a' <= c && c <= 'z') || c == '_')
+        tail <- many $ alphaNumChar <|> oneOf "_.'"
+        return $ head : tail
 
 -- | match any non-space character
 nonSpace :: Parser Char
 nonSpace = noneOf " \n\t\r\v"
 
 path :: Parser [String]
-path = do
-  path <- sepBy name (char '/')
-  whiteSpace
-  return path
-
--- | matches all trailing space
-chop :: Parser String
-chop = do
-  ss <- many space'
-  optional newline
-  return ss
-
--- | non-newline space
-space' :: Parser Char
-space' = char ' ' <|> char '\t'
-
--- | a raw line with spaces
-line :: Parser String
-line = do
-  s <- many1 space'
-  l <- many (noneOf "\n")
-  newline
-  return $ s ++ l
+path = lexeme $ sepBy name (char '/')
 

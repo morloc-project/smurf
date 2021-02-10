@@ -2,13 +2,13 @@ module Smurf (parseSmurf) where
 
 import Smurf.Data
 import Smurf.Parser
-import Text.Parsec (parse, SourceName)
+import Text.Megaparsec
 
-parseSmurf :: SourceName -> String -> String
-parseSmurf file s =
-  case parse smurf file s of
-    Left  err    -> show      err    ++ "\n"
-    Right result -> showSmurf result ++ "\n"
+parseSmurf :: String -> String -> String
+parseSmurf f s =
+    case runParser smurf f s of
+        Left e -> errorBundlePretty e
+        Right v -> show v
 
 -- | a somewhat pretty printer, it doesn't convert all the way back to the
 -- input code, although perhaps that would be a reasonable thing to do. 
