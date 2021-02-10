@@ -19,6 +19,8 @@ module Smurf.Lexer
     , nonSpace
     , lexeme
     , whiteSpace
+    , whiteSpaceNewline
+    , eol
     , path
     , comma
     , parens
@@ -27,7 +29,7 @@ module Smurf.Lexer
     ) where
 
 import Text.Megaparsec
-import Text.Megaparsec.Char
+import Text.Megaparsec.Char hiding (eol)
 import qualified Text.Megaparsec.Char.Lexer as L
 import Data.Char as DC
 import Data.Void
@@ -38,31 +40,35 @@ type Parser = Parsec Void String
 lexeme :: Parser a -> Parser a
 lexeme = L.lexeme whiteSpace
 
+comments :: Parser ()
+comments =  L.skipLineComment "--"
+        <|> L.skipBlockCommentNested "{-" "-}"
+
 whiteSpace :: Parser ()
 whiteSpace =
     skipMany $ (do
+        oneOf " \t\r\v"
+        return ()
+    ) <|> comments
+
+eol :: Parser ()
+eol = char '\n' >> whiteSpaceNewline
+
+whiteSpaceNewline :: Parser ()
+whiteSpaceNewline =
+    skipMany $ (do
         oneOf " \n\t\r\v"
         return ()
-        )
-        <|> L.skipLineComment "--"
-        <|> L.skipBlockCommentNested "{-" "-}"
-
-surround :: Parser a -> Parser a -> Parser b -> Parser b
-surround a b p =
-    do
-        lexeme a
-        v <- lexeme p
-        lexeme b
-        return v
+    ) <|> comments
 
 brackets :: Parser a -> Parser a
-brackets = surround (char '[') (char ']')
+brackets = between (char '[') (char ']')
 
 parens :: Parser a -> Parser a
-parens = surround (char '(') (char ')')
+parens = between (char '(') (char ')')
 
 braces :: Parser a -> Parser a
-braces = surround (char '{') (char '}')
+braces = between (char '{') (char '}')
 
 op :: String -> Parser ()
 op s = lexeme $

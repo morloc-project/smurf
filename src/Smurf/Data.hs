@@ -40,6 +40,7 @@ data Statement
 data Expression
   = ExprPrimitive Primitive
   | ExprApplication Name [Expression]
+  | ExprName Name
   deriving(Show, Ord, Eq)
 
 data Primitive

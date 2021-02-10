@@ -9,7 +9,7 @@ import Smurf.Data
 import qualified Smurf.Lexer as Tok
 
 smurf :: Tok.Parser [Top]
-smurf = Tok.whiteSpace >> Tok.lexeme (
+smurf = Tok.whiteSpaceNewline >> Tok.lexeme (
     do
         result <- many top
         eof
@@ -24,7 +24,7 @@ top =
 topStatement :: Tok.Parser Top
 topStatement = do
   s <- statement
-  Tok.lexeme $ char ';'
+  Tok.eol
   return $ TopStatement s
 
 statement :: Tok.Parser Statement
@@ -46,8 +46,8 @@ expression =
   where
     term' =
           try (Tok.parens expression)
-      <|> try application
       <|> try primitiveExpr
+      <|> try application
 
 primitiveExpr :: Tok.Parser Expression
 primitiveExpr = ExprPrimitive <$> primitive
@@ -62,9 +62,12 @@ primitive =
 
 application :: Tok.Parser Expression
 application = do
-  function <- Tok.name
-  arguments <- sepBy expression Tok.whiteSpace
-  return $ ExprApplication function arguments
+    function <- Tok.name
+    arguments <- many
+         $  Tok.parens expression
+        <|> ExprName <$> Tok.name
+        <|> primitiveExpr
+    return $ ExprApplication function arguments
 
 -- | function :: [input] -> output constraints 
 signature :: Tok.Parser Statement

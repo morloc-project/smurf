@@ -5,5 +5,6 @@ kbfnds k
 {-nested comment-}
 
 -}
-foo :: A -> B a;
-foo x y = f (g x y);
+foo :: A -> B a
+-- more comments
+foo x y = f (g x y)
