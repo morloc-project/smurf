@@ -9,12 +9,11 @@ import Smurf.Data
 import qualified Smurf.Lexer as Tok
 
 smurf :: Tok.Parser [Top]
-smurf = Tok.whiteSpaceNewline >> Tok.lexeme (
+smurf = Tok.whiteSpaceNewline >>
     do
         result <- many top
-        eof
+        Tok.lexeme eof
         return result
-    )
 
 top :: Tok.Parser Top
 top =

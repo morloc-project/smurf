@@ -55,7 +55,7 @@ whiteSpace =  skipMany
           <|> comments
 
 eol :: Parser ()
-eol = char '\n' >> whiteSpaceNewline
+eol = (char '\n' >> whiteSpaceNewline) <|> eof
 
 indent :: Ordering -> Pos -> Parser Pos
 indent = L.indentGuard spaces
@@ -63,8 +63,8 @@ indent = L.indentGuard spaces
 whiteSpaceNewline :: Parser ()
 whiteSpaceNewline = skipMany
      $  Control.Monad.void (char '\n')
-    <|> (lookAhead (many spaces >> char '\n') >> spaces)
     <|> comments
+    <|> (lookAhead (many spaces >> (Control.Monad.void (char '\n') <|> comments)) >> spaces)
 
 brackets :: Parser a -> Parser a
 brackets = between (char '[') (char ']')
