@@ -4,7 +4,6 @@ import Control.Monad.State
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
-import Debug.Trace
 
 import Smurf.Data
 import qualified Smurf.Lexer as Tok
@@ -77,12 +76,11 @@ signature =
     do
         level <- L.indentLevel
         function <- Tok.name
-        optional $ Tok.eol >> Tok.indent GT level
-        level <- L.indentLevel
+        Tok.block level
         Tok.op "::"
         head <- mtype
         tail <- many $ try $ do
-            optional $ char '\n' >> Tok.indent EQ level
+            Tok.block level
             Tok.op "->"
             mtype
         let output = if null tail then

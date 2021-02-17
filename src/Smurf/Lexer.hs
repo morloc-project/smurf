@@ -22,6 +22,7 @@ module Smurf.Lexer
     , whiteSpaceNewline
     , eol
     , indent
+    , block
     , spaces
     , path
     , comma
@@ -51,7 +52,7 @@ spaces :: Parser ()
 spaces = void $ oneOf " \t\r\v"
 
 whiteSpace :: Parser ()
-whiteSpace =  L.space spaces comments empty
+whiteSpace = L.space spaces comments empty
 
 eol :: Parser ()
 eol = (char '\n' >> whiteSpaceNewline) <|> eof
@@ -70,6 +71,9 @@ indent ord pos =
             return level
         else
             L.incorrectIndent ord pos level
+
+block :: Pos -> Parser (Maybe Pos)
+block level = optional $ eol >> indent GT level >> L.indentLevel
 
 whiteSpaceNewline :: Parser ()
 whiteSpaceNewline =  skipMany
