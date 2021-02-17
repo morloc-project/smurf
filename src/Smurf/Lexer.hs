@@ -22,6 +22,7 @@ module Smurf.Lexer
     , whiteSpaceNewline
     , eol
     , indent
+    , spaces
     , path
     , comma
     , parens
@@ -47,24 +48,34 @@ comments =  L.skipLineComment "--"
         <|> L.skipBlockCommentNested "{-" "-}"
 
 spaces :: Parser ()
-spaces = Control.Monad.void $ oneOf " \t\r\v"
+spaces = void $ oneOf " \t\r\v"
 
 whiteSpace :: Parser ()
-whiteSpace =  skipMany
-           $  spaces
-          <|> comments
+whiteSpace =  L.space spaces comments empty
 
 eol :: Parser ()
 eol = (char '\n' >> whiteSpaceNewline) <|> eof
 
 indent :: Ordering -> Pos -> Parser Pos
-indent = L.indentGuard spaces
+indent ord pos =
+    -- indentGuard doesn't work for me :/
+    do
+        many $ oneOf " \t"
+        level <- L.indentLevel
+        let correct = case ord of
+                EQ -> pos == level
+                GT -> pos < level
+                LT -> pos > level
+        if correct then
+            return level
+        else
+            L.incorrectIndent ord pos level
 
 whiteSpaceNewline :: Parser ()
-whiteSpaceNewline = skipMany
-     $  Control.Monad.void (char '\n')
-    <|> comments
-    <|> (lookAhead (many spaces >> (Control.Monad.void (char '\n') <|> comments)) >> spaces)
+whiteSpaceNewline =  skipMany
+                  $  void (char '\n')
+                 -- <|> lookAhead (many spaces >> (void (char '\n') <|> comments)) >> spaces
+                 <|> comments
 
 brackets :: Parser a -> Parser a
 brackets = between (char '[') (char ']')
@@ -76,10 +87,10 @@ braces :: Parser a -> Parser a
 braces = between (char '{') (char '}')
 
 op :: String -> Parser ()
-op s = lexeme $ Control.Monad.void $ string s
+op s = lexeme $ void $ string s
 
 reserved :: String -> Parser ()
-reserved s = lexeme $ Control.Monad.void $ string s
+reserved s = lexeme $ void $ string s
 
 reservedNames :: [String]
 reservedNames = [
@@ -109,7 +120,7 @@ name = lexeme $
             return v
 
 comma :: Parser ()
-comma = lexeme $ Control.Monad.void $ char ','
+comma = lexeme $ void $ char ','
 
 integer :: Parser Integer
 integer = lexeme $

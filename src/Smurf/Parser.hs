@@ -33,11 +33,9 @@ statement =  try signature
 declaration :: Tok.Parser Statement
 declaration =
     do
-        level <- L.indentLevel
         varname <- Tok.name
         bndvars <- many Tok.name
         Tok.op "="
-        optional $ Tok.eol >> Tok.indent GT level
         Declaration varname bndvars <$> expression
 
 expression :: Tok.Parser Expression
@@ -72,17 +70,20 @@ application = do
         <|> primitiveExpr
     return $ ExprApplication function arguments
 
--- | function :: [input] -> output constraints 
+-- | function :: [input] -> output constraints
 signature :: Tok.Parser Statement
-signature = do
-  function <- Tok.name
-  Tok.op "::"
-  inputs <- sepBy1 mtype Tok.comma
-  output <- optional (
-      Tok.op "->" >>
-      mtype
-    )
-  return $ Signature function inputs output
+signature =
+    do
+        level <- L.indentLevel
+        function <- Tok.name
+        Tok.eol >> Tok.indent GT level
+        Tok.op "::"
+        inputs <- sepBy1 mtype Tok.comma
+        output <- optional (
+            Tok.op "->" >>
+            mtype
+            )
+        return $ Signature function inputs output
 
 mtype :: Tok.Parser MType
 mtype =
