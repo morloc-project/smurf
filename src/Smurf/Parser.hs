@@ -17,15 +17,10 @@ smurf = Tok.whiteSpaceNewline >>
         return result
 
 top :: Tok.Parser Top
-top =
-  try topStatement
-  <?> "Top. Maybe you are missing a semicolon?"
-
-topStatement :: Tok.Parser Top
-topStatement = do
+top = do
     Tok.indent EQ (mkPos 1)
-    s <- statement
-    Tok.eol
+    s <- statement <?> "import, export, signature, or declaration"
+    Tok.eol <?> "newline"
     return $ TopStatement s
 
 statement :: Tok.Parser Statement

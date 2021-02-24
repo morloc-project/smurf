@@ -48,6 +48,7 @@ lexeme = L.lexeme whiteSpace
 comments :: Parser ()
 comments =  L.skipLineComment "--"
         <|> L.skipBlockCommentNested "{-" "-}"
+        <?> "comment"
 
 spaces :: Parser ()
 spaces = void $ oneOf " \t\r\v"
