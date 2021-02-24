@@ -23,6 +23,7 @@ module Smurf.Lexer
     , eol
     , indent
     , block
+    , forceBlock
     , spaces
     , path
     , comma
@@ -72,8 +73,11 @@ indent ord pos =
         else
             L.incorrectIndent ord pos level
 
+forceBlock :: Pos -> Parser Pos
+forceBlock level = eol >> indent GT level >> L.indentLevel
+
 block :: Pos -> Parser (Maybe Pos)
-block level = optional $ eol >> indent GT level >> L.indentLevel
+block level = optional $ forceBlock level
 
 whiteSpaceNewline :: Parser ()
 whiteSpaceNewline =  skipMany

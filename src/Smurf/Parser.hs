@@ -121,7 +121,15 @@ signature =
                 [head]
             else
                 head : init tail
-        return $ Signature function inputs output
+        Signature function inputs output <$> wherey level
+
+wherey :: Pos -> Tok.Parser (Maybe [Expression])
+wherey level = optional $ try $ do
+    level' <- Tok.block level
+    let level'' = fromMaybe level level'
+    Tok.reserved "where"
+    Tok.block level''
+    sepBy1 expression $ try $ Tok.forceBlock level''
 
 mtype :: Tok.Parser MType
 mtype =

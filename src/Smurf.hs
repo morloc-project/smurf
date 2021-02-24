@@ -17,7 +17,7 @@ showSmurf = unlines . map showSmurf' where
   showSmurf' :: Top -> String
  -- showSmurf' (TopImport (Import path qual rest)) =
   --   unwords ["from", show path, "import", show rest, "as", show qual]
-  showSmurf' (TopStatement (Signature name ins out)) =
-    unwords [name, "::", show ins, "->", show out]  
+  showSmurf' (TopStatement (Signature name ins out preds)) =
+    unwords [name, "::", show ins, "->", show out, "where", show preds]  
 --  showSmurf' (TopSource x) = ""
   showSmurf' x = show x

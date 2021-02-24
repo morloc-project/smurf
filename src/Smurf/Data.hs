@@ -28,21 +28,22 @@ data MType
 
 data Statement
     = Signature
-      Name           -- lhs
-      [MType]        -- inputs
-      (Maybe MType)  -- optional output
+      Name                  -- lhs
+      [MType]               -- inputs
+      (Maybe MType)         -- optional output
+      (Maybe [Expression])  -- where clause
     | Declaration
-      Name           -- lhs
-      [Name]         -- bound variables
-      Expression     -- rhs
+      Name                  -- lhs
+      [Name]                -- bound variables
+      Expression            -- rhs
     | Import
-      [Name]         -- module name
-      [Name]         -- imported items
+      [Name]                -- module name
+      [Name]                -- imported items
     | ImportQualified
-      [Name]         -- module name
-      (Maybe Name)   -- module alias
+      [Name]                -- module name
+      (Maybe Name)          -- module alias
     | Export
-      Name           -- exported item
+      Name                  -- exported item
   deriving(Show, Ord, Eq)
 
 data Expression

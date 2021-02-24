@@ -1,12 +1,12 @@
-import cppbase
-    (
-        fold,
-        map
-    )
-import Foo/Bar/Baz
-import Foo/Biz as FB
+-- import cppbase
+    -- (
+        -- fold,
+        -- map
+    -- )
+-- import Foo/Bar/Baz
+-- import Foo/Biz as FB
 
-export bar
+-- export bar
 
 -- foo :: A -> B a
 -- foo x = f (g x)
@@ -16,12 +16,18 @@ export bar
 -- y :: a
 -- z :: w
 
-bar x y =
-    h x y
-        z
-        (
-            foo x
-                y z
-            )
-        y
+-- bar x y =
+    -- h x y
+        -- z
+        -- (
+            -- foo x
+                -- y z
+            -- )
+        -- y
+
+reverse :: a:[a] -> b:[a] where
+    eq (len a) (len b)
+    pred2 a b
+    pred3 a b
+    True
 
