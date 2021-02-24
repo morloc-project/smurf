@@ -2,7 +2,7 @@ import cppbase
     (
         fold,
         map
-        )
+    )
 
 export bar
 
