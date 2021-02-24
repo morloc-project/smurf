@@ -38,6 +38,9 @@ data Statement
     | Import
       [Name]         -- module name
       [Name]         -- imported items
+    | ImportQualified
+      [Name]         -- module name
+      (Maybe Name)   -- module alias
     | Export
       Name           -- exported item
   deriving(Show, Ord, Eq)

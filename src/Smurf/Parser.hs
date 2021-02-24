@@ -41,8 +41,12 @@ importy =
         Tok.reserved "import"
         mod <- Tok.path
         imports <- optional $ try $ Tok.block level >> Tok.parens level (sepBy Tok.name (Tok.comma >> Tok.whiteSpaceNewline))
-        let imports' = fromMaybe [] imports
-        return $ Import mod imports'
+        if isNothing imports then do
+            alias <- optional $ Tok.reserved "as" >> Tok.name
+            return $ ImportQualified mod alias
+        else
+            let imports' = fromMaybe [] imports in
+            return $ Import mod imports'
 
 exporty :: Tok.Parser Statement
 exporty =

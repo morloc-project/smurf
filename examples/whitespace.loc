@@ -3,8 +3,8 @@ import cppbase
         fold,
         map
     )
-
 import Foo/Bar/Baz
+import Foo/Biz as FB
 
 export bar
 
