@@ -78,7 +78,7 @@ block level = optional $ eol >> indent GT level >> L.indentLevel
 whiteSpaceNewline :: Parser ()
 whiteSpaceNewline =  skipMany
                   $  void (char '\n')
-                 -- <|> lookAhead (many spaces >> (void (char '\n') <|> comments)) >> spaces
+                 <|> spaces
                  <|> comments
 
 symbol :: String -> Parser String
