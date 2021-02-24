@@ -22,9 +22,10 @@ top =
 
 topStatement :: Tok.Parser Top
 topStatement = do
-  s <- statement
-  Tok.eol
-  return $ TopStatement s
+    Tok.indent EQ (mkPos 1)
+    s <- statement
+    Tok.eol
+    return $ TopStatement s
 
 statement :: Tok.Parser Statement
 statement =  try signature
