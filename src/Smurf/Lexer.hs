@@ -200,5 +200,5 @@ nonSpace :: Parser Char
 nonSpace = noneOf " \n\t\r\v"
 
 path :: Parser [String]
-path = lexeme $ sepBy name (char '/')
+path = lexeme $ sepBy1 name (symbol "/")
 

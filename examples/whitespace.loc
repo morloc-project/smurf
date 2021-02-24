@@ -4,6 +4,8 @@ import cppbase
         map
     )
 
+import Foo/Bar/Baz
+
 export bar
 
 -- foo :: A -> B a

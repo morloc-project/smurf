@@ -39,9 +39,8 @@ importy =
     do
         level <- L.indentLevel
         Tok.reserved "import"
-        mod <- Tok.name
-        Tok.block level
-        imports <- optional $ Tok.parens level $ sepBy Tok.name (Tok.comma >> Tok.whiteSpaceNewline)
+        mod <- Tok.path
+        imports <- optional $ try $ Tok.block level >> Tok.parens level (sepBy Tok.name (Tok.comma >> Tok.whiteSpaceNewline))
         let imports' = fromMaybe [] imports
         return $ Import mod imports'
 

@@ -36,7 +36,7 @@ data Statement
       [Name]         -- bound variables
       Expression     -- rhs
     | Import
-      Name           -- module name
+      [Name]         -- module name
       [Name]         -- imported items
     | Export
       Name           -- exported item
