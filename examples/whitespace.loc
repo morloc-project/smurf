@@ -6,11 +6,8 @@
 -- y :: a
 -- z :: w
 
-bar x y = h (foo x) y
-
--- bar x y
---    =
---    h (
---        foo x
---    ) y
+bar x y =
+    h
+        (foo x)
+        y
 

@@ -33,9 +33,12 @@ statement =  try signature
 declaration :: Tok.Parser Statement
 declaration =
     do
+        level <- L.indentLevel
         varname <- Tok.name
         bndvars <- many Tok.name
+        Tok.block level
         Tok.op "="
+        Tok.block level
         Declaration varname bndvars <$> expression
 
 expression :: Tok.Parser Expression
@@ -63,11 +66,13 @@ primitive =
 
 application :: Tok.Parser Expression
 application = do
+    level <- L.indentLevel
     function <- Tok.name
-    arguments <- many
-         $  try (Tok.parens application)
-        <|> try (ExprName <$> Tok.name)
+    arguments <- many $ try $ Tok.block level >> (
+            Tok.parens application
+        <|> (ExprName <$> Tok.name)
         <|> primitiveExpr
+        )
     return $ ExprApplication function arguments
 
 -- | function :: [input] -> output constraints
