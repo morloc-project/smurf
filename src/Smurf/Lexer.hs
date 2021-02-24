@@ -81,14 +81,17 @@ whiteSpaceNewline =  skipMany
                  -- <|> lookAhead (many spaces >> (void (char '\n') <|> comments)) >> spaces
                  <|> comments
 
+symbol :: String -> Parser String
+symbol = L.symbol whiteSpace
+
 brackets :: Parser a -> Parser a
-brackets = between (char '[') (char ']')
+brackets = between (symbol "[") (symbol "]")
 
 parens :: Parser a -> Parser a
-parens = between (char '(') (char ')')
+parens = between (symbol "(") (symbol ")")
 
 braces :: Parser a -> Parser a
-braces = between (char '{') (char '}')
+braces = between (symbol "{") (symbol "}")
 
 op :: String -> Parser ()
 op s = lexeme $ void $ string s

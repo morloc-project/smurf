@@ -45,9 +45,9 @@ expression =
   <?> "an expression"
   where
     term' =
-          try (Tok.parens expression)
+          try application
+      <|> try (Tok.parens expression)
       <|> try primitiveExpr
-      <|> try application
       <|> ExprName <$> Tok.name
 
 primitiveExpr :: Tok.Parser Expression
@@ -65,8 +65,8 @@ application :: Tok.Parser Expression
 application = do
     function <- Tok.name
     arguments <- many
-         $  Tok.parens expression
-        <|> ExprName <$> Tok.name
+         $  try (Tok.parens application)
+        <|> try (ExprName <$> Tok.name)
         <|> primitiveExpr
     return $ ExprApplication function arguments
 

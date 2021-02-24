@@ -1,10 +1,12 @@
 -- foo :: A -> B a
 -- foo x = f (g x)
 
-bar :: a
-    -> A -> B A a
-y :: a
-z :: w
+-- bar :: a
+--     -> A -> B A a
+-- y :: a
+-- z :: w
+
+bar x y = h (foo x) y
 
 -- bar x y
 --    =
