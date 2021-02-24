@@ -27,14 +27,19 @@ data MType
   deriving(Show, Ord, Eq)
 
 data Statement
-  = Signature
+    = Signature
       Name           -- lhs
       [MType]        -- inputs
       (Maybe MType)  -- optional output
-  | Declaration
+    | Declaration
       Name           -- lhs
       [Name]         -- bound variables
       Expression     -- rhs
+    | Import
+      Name           -- module name
+      [Name]         -- imported items
+    | Export
+      Name           -- exported item
   deriving(Show, Ord, Eq)
 
 data Expression

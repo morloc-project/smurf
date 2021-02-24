@@ -4,6 +4,7 @@ import Control.Monad.State
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
+import Data.Maybe
 
 import Smurf.Data
 import qualified Smurf.Lexer as Tok
@@ -28,8 +29,28 @@ topStatement = do
     return $ TopStatement s
 
 statement :: Tok.Parser Statement
-statement =  try signature
+statement =  importy
+         <|> exporty
+         <|> try signature
          <|> declaration
+
+importy :: Tok.Parser Statement
+importy =
+    do
+        level <- L.indentLevel
+        Tok.reserved "import"
+        mod <- Tok.name
+        level' <- Tok.block level
+        let level'' = fromMaybe level level'
+        imports <- optional $ Tok.parens level'' $ sepBy Tok.name (Tok.comma >> Tok.whiteSpaceNewline)
+        let imports' = fromMaybe [] imports
+        return $ Import mod imports'
+
+exporty :: Tok.Parser Statement
+exporty =
+    do
+        Tok.reserved "export"
+        Export <$> Tok.name
 
 declaration :: Tok.Parser Statement
 declaration =
