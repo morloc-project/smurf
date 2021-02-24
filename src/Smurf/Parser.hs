@@ -47,11 +47,12 @@ expression =
   term'
   <?> "an expression"
   where
-    term' =
-          try application
-      <|> try (Tok.parens expression)
-      <|> try primitiveExpr
-      <|> ExprName <$> Tok.name
+    term' = do
+        level <- L.indentLevel
+        try application
+          <|> try (Tok.parens level expression)
+          <|> try primitiveExpr
+          <|> ExprName <$> Tok.name
 
 primitiveExpr :: Tok.Parser Expression
 primitiveExpr = ExprPrimitive <$> primitive
@@ -69,7 +70,7 @@ application = do
     level <- L.indentLevel
     function <- Tok.name
     arguments <- many $ try $ Tok.block level >> (
-            Tok.parens application
+            Tok.parens level application
         <|> (ExprName <$> Tok.name)
         <|> primitiveExpr
         )
@@ -110,15 +111,17 @@ mtype =
     -- [ <type> ]
     list' :: Tok.Parser MType
     list' = do
+      level <- L.indentLevel
       l <- Tok.tag (char '[')
-      s <- Tok.brackets mtype
+      s <- Tok.brackets level mtype
       return $ MList s l
 
     -- ( <type>, <type>, ... )
     paren' :: Tok.Parser MType
     paren' = do
+      level <- L.indentLevel
       l <- Tok.tag (char '(')
-      s <- Tok.parens (sepBy mtype Tok.comma)
+      s <- Tok.parens level (sepBy mtype Tok.comma)
       return $ case s of
         []  -> MEmpty
         [x] -> x
@@ -145,9 +148,10 @@ mtype =
     -- <name> { <name> :: <type>, <name> :: <type>, ... }
     record' :: Tok.Parser MType
     record' = do
+      level <- L.indentLevel
       l <- Tok.tag Tok.specificType
       n <- Tok.specificType
-      xs <- Tok.braces (sepBy1 recordEntry' Tok.comma)
+      xs <- Tok.braces level (sepBy1 recordEntry' Tok.comma)
       return $ MRecord n xs l
 
     -- (<name> = <type>)

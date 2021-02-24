@@ -84,14 +84,24 @@ whiteSpaceNewline =  skipMany
 symbol :: String -> Parser String
 symbol = L.symbol whiteSpace
 
-brackets :: Parser a -> Parser a
-brackets = between (symbol "[") (symbol "]")
+surround :: Parser l -> Parser r -> Pos -> Parser a -> Parser a
+surround l r level v =
+    do
+        l
+        block level
+        v <- v
+        block level
+        r
+        return v
 
-parens :: Parser a -> Parser a
-parens = between (symbol "(") (symbol ")")
+brackets :: Pos -> Parser a -> Parser a
+brackets = surround (symbol "[") (symbol "]")
 
-braces :: Parser a -> Parser a
-braces = between (symbol "{") (symbol "}")
+parens :: Pos -> Parser a -> Parser a
+parens = surround (symbol "(") (symbol ")")
+
+braces :: Pos -> Parser a -> Parser a
+braces = surround (symbol "{") (symbol "}")
 
 op :: String -> Parser ()
 op s = lexeme $ void $ string s

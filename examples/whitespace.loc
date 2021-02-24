@@ -7,7 +7,11 @@
 -- z :: w
 
 bar x y =
-    h
-        (foo x)
+    h x y
+        z
+        (
+            foo x
+                y z
+            )
         y
 
